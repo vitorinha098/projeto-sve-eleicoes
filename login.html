@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt"
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVE - Autenticação Segura</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        /* Fundo Animado (Mesmo do Votar) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* Card de Login Glassmorphism */
+        .card-login {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+        }
+
+        .brand-logo {
+            width: 80px;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        /* Inputs Modernos */
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 15px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.5);
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Botão Elite */
+        .btn-login {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-login:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+            color: white;
+        }
+
+        .badge-secure {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card-login text-center">
+        <span class="badge-secure">
+            <i class="bi bi-shield-lock-fill me-1"></i> Ambiente Encriptado
+        </span>
+
+        <div class="mb-4">
+            <img src="img/sve.png" alt="SVE Logo" class="brand-logo">
+            <h2 class="fw-extrabold mb-1" style="font-weight: 800; letter-spacing: -1px;">Portal do Eleitor</h2>
+            <p class="text-muted small">Insira os seus dados para aceder à urna</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="text-start mb-3">
+                <label class="form-label small fw-bold ms-1">NIF (Número de Identificação Fiscal)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;">
+                        <i class="bi bi-person text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" id="nifInput" placeholder="000 000 000" maxlength="9" required style="border-radius: 0 12px 12px 0;">
+                </div>
+            </div>
+
+            <div class="text-start mb-4">
+                <label class="form-label small fw-bold ms-1">Chave de Acesso</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;">
+                        <i class="bi bi-key text-muted"></i>
+                    </span>
+                    <input type="password" class="form-control border-start-0" id="passInput" placeholder="••••••••" required style="border-radius: 0 12px 12px 0;">
+                </div>
+            </div>
+
+            <button type="button" onclick="autenticar()" class="btn btn-login w-100 shadow-sm">
+                Entrar no Sistema
+            </button>
+        </form>
+
+        <div class="mt-4 pt-3 border-top">
+            <a href="nova-chave.html" class="text-decoration-none small text-muted hover-primary">
+                Problemas no acesso? <span class="text-primary fw-bold">Recuperar Chave</span>
+            </a>
+            <a href="registo.html" class="text-decoration-none small text-primary fw-bold">
+                Ainda não está recenseado? Registe-se aqui
+            </a>
+        </div>
+    </div>
+
+    <script>
+        async function autenticar() {
+    const nif = document.getElementById('nifInput').value;
+    const chave = document.getElementById('passInput').value; // Pegamos a pass do input
+
+    // Validação básica de preenchimento
+    if(nif.length === 9 && chave !== "") {
+        
+        try {
+            // 1. Enviamos NIF e CHAVE para o Node.js verificar
+            const response = await fetch('http://127.0.0.1:8000/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nif: nif, chave: chave })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // 2. Se o login deu certo, verificamos se este NIF já votou
+                const checkVoto = await fetch(`http://127.0.0.1:8000/verificar-voto/${nif}`);
+                const statusVoto = await checkVoto.json();
+
+                if (statusVoto.ja_votou) {
+                    alert("Atenção: Este NIF já exerceu o seu direito de voto. A redirecionar para os resultados...");
+                    window.location.href = 'resultados.html';
+                } else {
+                    // Login OK e ainda não votou!
+                    localStorage.setItem('nifEleitor', nif);
+                    localStorage.setItem('nomeEleitor', data.nome); // Guardamos o nome vindo da BD
+                    window.location.href = 'votar.html';
+                }
+            } else {
+                // Caso a senha esteja errada ou NIF não exista
+                alert(data.message || "Dados de acesso incorretos!");
+            }
+
+        } catch (error) {
+            alert("Erro de ligação: O servidor Node.js está offline!");
+            console.error(error);
+        }
+
+    } else {
+        alert("Por favor, introduza um NIF válido (9 dígitos) e a sua chave.");
+    }
+}
+    </script>
+
+</body>
+</html>
