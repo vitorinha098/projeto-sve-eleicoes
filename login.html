@@ -163,10 +163,18 @@
             const response = await fetch('http://127.0.0.1:8000/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nif: nif, chave: chave })
+                body: JSON.stringify({ nif: nif, password: chave })
             });
 
             const data = await response.json();
+
+            if (data.success) {
+                // AGORA SIM: Guardamos o nome real que veio da base de dados
+                localStorage.setItem('nifEleitor', nif);
+                localStorage.setItem('nomeEleitor', data.nome); 
+                
+                window.location.href = 'votar.html';
+            }
 
             if (response.ok && data.success) {
                 // 2. Se o login deu certo, verificamos se este NIF já votou

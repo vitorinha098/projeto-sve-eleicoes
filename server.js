@@ -12,7 +12,7 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'root',
-    database: 'projeto_votos'
+    database: 'base_de_dados_pi'
 });
 
 db.connect(err => {
@@ -73,39 +73,46 @@ app.get('/verificar-voto/:nif', (req, res) => {
 
 // ROTA DE REGISTO (Cria o Eleitor)
 app.post('/registar', (req, res) => {
-    const { nome, nif, morada, nacionalidade, chave } = req.body;
+    const { nome, data_nasc, genero, email, nif, validade_cc, password } = req.body;
 
-    const sql = "INSERT INTO eleitores (nome_completo, nif, morada, nacionalidade, chave_acesso) VALUES (?, ?, ?, ?, ?)";
-    
-    db.query(sql, [nome, nif, morada, nacionalidade, chave], (err, result) => {
+    // Nomes das colunas conforme o novo SQL
+    const sql = `INSERT INTO Eleitor 
+        (nome_completo, data_nascimento, genero, email, NIF, data_validade_cc, palavra_passe) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(sql, [nome, data_nasc, genero, email, nif, validade_cc, password], (err, result) => {
         if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ message: "Este NIF já está registado no sistema!" });
-            }
-            return res.status(500).json(err);
+            // Se o Trigger "maior_de_idade_eleitor" disparar, o erro vem aqui
+            console.error(err);
+            return res.status(400).json({ 
+                success: false, 
+                message: err.sqlMessage || "Erro ao registar eleitor." 
+            });
         }
-        res.json({ success: true, message: "Eleitor registado com sucesso!" });
+        res.json({ success: true, message: "Registo efetuado com sucesso!" });
     });
 });
 
-// AJUSTE NA ROTA DE LOGIN (Verifica NIF + Chave)
+// AJUSTE NA ROTA DE LOGIN (Verifica NIF + password)
 app.post('/login', (req, res) => {
-    const { nif, chave } = req.body;
+    const { nif, password } = req.body; // 'password' vem do teu formulário HTML
 
-    // O MySQL compara os dois. Se um estiver errado, não devolve linhas.
-    const sql = "SELECT nome_completo FROM eleitores WHERE nif = ? AND chave_acesso = ?";
+    // Nota: Usamos NIF (maiúsculas) e palavra_passe conforme o SQL do teu colega
+    const sql = "SELECT id_eleitor, nome_completo FROM Eleitor WHERE NIF = ? AND palavra_passe = ?";
     
-    db.query(sql, [nif, chave], (err, results) => {
+    db.query(sql, [nif, password], (err, results) => {
         if (err) return res.status(500).json(err);
 
         if (results.length > 0) {
-            // Sucesso! Devolvemos o nome para personalizar o boletim
-            res.json({ success: true, nome: results[0].nome_completo });
+            // Sucesso! Guardamos o ID e o Nome para usar no voto
+            res.json({ 
+                success: true, 
+                id: results[0].id_eleitor, 
+                nome: results[0].nome_completo 
+            });
         } else {
-            // Se chegou aqui, ou o NIF não existe ou a CHAVE está errada
-            res.status(401).json({ success: false, message: "NIF ou Chave de Acesso incorretos!" });
+            res.status(401).json({ success: false, message: "NIF ou Chave incorretos!" });
         }
     });
 });
-
 app.listen(8000, () => console.log("Servidor Node.js na porta 8000"));
