@@ -150,16 +150,13 @@
         </div>
     </div>
 
-    <script>
-        async function autenticar() {
+<script>
+    async function autenticar() {
     const nif = document.getElementById('nifInput').value;
-    const chave = document.getElementById('passInput').value; // Pegamos a pass do input
+    const chave = document.getElementById('passInput').value;
 
-    // Validação básica de preenchimento
-    if(nif.length === 9 && chave !== "") {
-        
+    if (nif.length === 9 && chave !== "") {
         try {
-            // 1. Enviamos NIF e CHAVE para o Node.js verificar
             const response = await fetch('http://127.0.0.1:8000/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -169,42 +166,42 @@
             const data = await response.json();
 
             if (data.success) {
-                // AGORA SIM: Guardamos o nome real que veio da base de dados
+
+                alert("Login efetuado com sucesso! Bem-vindo(a), " + data.nome);
+                // 1. Guardamos os dados primeiro
                 localStorage.setItem('nifEleitor', nif);
-                localStorage.setItem('nomeEleitor', data.nome); 
-                
-                window.location.href = 'votar.html';
-            }
+                localStorage.setItem('nomeEleitor', data.nome);
+                localStorage.setItem('idEleitor', data.idEleitor);
 
-            if (response.ok && data.success) {
-                // 2. Se o login deu certo, verificamos se este NIF já votou
-                const checkVoto = await fetch(`http://127.0.0.1:8000/verificar-voto/${nif}`);
-                const statusVoto = await checkVoto.json();
+                // 2. AGORA fazemos a verificação ANTES de mudar de página
+                try {
+                    const checkVoto = await fetch(`http://127.0.0.1:8000/verificar-voto/${nif}`);
+                    const statusVoto = await checkVoto.json();
 
-                if (statusVoto.ja_votou) {
-                    alert("Atenção: Este NIF já exerceu o seu direito de voto. A redirecionar para os resultados...");
-                    window.location.href = 'resultados.html';
-                } else {
-                    // Login OK e ainda não votou!
-                    localStorage.setItem('nifEleitor', nif);
-                    localStorage.setItem('nomeEleitor', data.nome); // Guardamos o nome vindo da BD
+                    if (statusVoto.ja_votou) {
+                        alert("Atenção: Já exerceu o seu direito de voto!");
+                        window.location.href = 'resultados.html';
+                    } else {
+                        window.location.href = 'votar.html';
+                    }
+                } catch (err) {
+                    // Se a verificação falhar (rota inexistente), seguimos para votar na mesma
+                    console.error("Erro ao verificar voto, mas o login deu certo.");
                     window.location.href = 'votar.html';
                 }
+
             } else {
-                // Caso a senha esteja errada ou NIF não exista
                 alert(data.message || "Dados de acesso incorretos!");
             }
-
         } catch (error) {
+            // Este alerta só vai aparecer se o servidor estiver MESMO desligado no login
             alert("Erro de ligação: O servidor Node.js está offline!");
-            console.error(error);
         }
-
     } else {
-        alert("Por favor, introduza um NIF válido (9 dígitos) e a sua chave.");
+        alert("Introduza um NIF válido e a sua chave.");
     }
 }
-    </script>
+</script>
 
 </body>
 </html>

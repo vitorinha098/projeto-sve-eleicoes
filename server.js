@@ -2,117 +2,130 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path'); // ESSENCIAL PARA AS IMAGENS
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 1. Ligar ao MySQL do XAMPP
+// Configuração para servir as imagens da pasta 'img'
+app.use(express.static(path.join(__dirname, 'img')));
+
+// Ligar ao MySQL
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'root',
+    password: 'root', 
     database: 'base_de_dados_pi'
 });
 
 db.connect(err => {
     if (err) throw err;
-    console.log("Conectado ao MySQL!");
-
-    // CÓDIGO PARA CRIAR A TABELA AUTOMATICAMENTE
-    const sqlTable = `
-    CREATE TABLE IF NOT EXISTS votos (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        nif VARCHAR(9) UNIQUE NOT NULL,
-        escolha VARCHAR(100) NOT NULL
-    )`;
-
-    db.query(sqlTable, (err, result) => {
-        if (err) throw err;
-        console.log("Tabela 'votos' verificada/criada com sucesso!");
-    });
+    console.log("Conectado ao MySQL com sucesso!");
 });
 
-// 2. Rota para VOTAR
+// --- NOVA ROTA PARA VOTAR (Compatível com a BD do colega) ---
 app.post('/votar', (req, res) => {
-    const { nif, escolha } = req.body;
-    const sql = "INSERT INTO votos (nif, escolha) VALUES (?, ?)";
+    const { idEleitor, id_candidato, id_eleicao } = req.body;
+
+    // 1. Verificação corrigida
+    if (!idEleitor || !id_candidato) {
+        return res.status(400).json({ success: false, message: "Dados de voto incompletos!" });
+    }
+
+    // 2. QUERY CORRIGIDA: Mudámos 'NIF' para 'id_eleitor' e adicionámos 'data_voto'
+    const sqlParticipacao = "INSERT INTO participacao (id_eleicao, id_eleitor, data_voto) VALUES (?, ?, NOW())";
     
-    db.query(sql, [nif, escolha], (err, result) => {
+    db.query(sqlParticipacao, [id_eleicao || 1, idEleitor], (err) => {
         if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).send({ message: "Já votou!" });
-            }
-            return res.status(500).send(err);
+            console.error("Erro Participação:", err.sqlMessage);
+            // Aqui enviamos o erro real para o teu alert no browser
+            return res.status(500).json({ success: false, message: "Erro na Tabela Participacao: " + err.sqlMessage });
         }
-        res.send({ status: "success" });
+
+        // 3. Registar o voto na tabela voto
+        const sqlVoto = "INSERT INTO voto (id_candidato, id_eleicao) VALUES (?, ?)";
+        db.query(sqlVoto, [id_candidato, id_eleicao || 1], (err) => {
+            if (err) {
+                console.error("Erro Voto:", err);
+                return res.status(500).json({ success: false, message: "Erro técnico ao gravar o voto." });
+            }
+            res.json({ success: true });
+        });
     });
 });
 
-// 3. Rota para ESTATÍSTICAS
-app.get('/estatisticas', (req, res) => {
-    const sql = "SELECT escolha, COUNT(*) as total FROM votos GROUP BY escolha";
+
+
+// --- ROTA DE LOGIN ---
+app.post('/login', (req, res) => {
+    const { nif, password } = req.body;
+    const sql = "SELECT id_eleitor, nome_completo FROM eleitor WHERE NIF = ? AND palavra_passe = ?";
+    
+    db.query(sql, [nif, password], (err, results) => {
+        if (err) return res.status(500).json(err);
+        if (results.length > 0) {
+            res.json({ success: true, nome: results[0].nome_completo, idEleitor: results[0].id_eleitor });
+        } else {
+            res.status(401).json({ success: false, message: "NIF ou Password incorretos!" });
+        }
+    });
+});
+
+// --- ROTA DE REGISTO ---
+app.post('/registar', (req, res) => {
+    const { nome, data_nasc, genero, email, nif, validade_cc, password } = req.body;
+    const sql = `INSERT INTO eleitor (nome_completo, data_nascimento, genero, email, NIF, data_validade_cc, palavra_passe) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(sql, [nome, data_nasc, genero, email, nif, validade_cc, password], (err, result) => {
+        if (err) {
+            return res.status(400).json({ success: false, message: err.sqlMessage || "Erro ao registar." });
+        }
+        res.json({ success: true });
+    });
+});
+
+// --- LISTAR CANDIDATOS ---
+app.get('/candidatos', (req, res) => {
+    const sql = `
+        SELECT c.id_candidato, c.nome_completo, p.nome AS nome_partido, p.foto 
+        FROM candidato c
+        JOIN partido p ON c.id_partido = p.id_partido
+        WHERE c.id_eleicao = 1`; 
+
     db.query(sql, (err, results) => {
-        if (err) return res.status(500).send(err);
-        
-        // Formatar para o gráfico
-        let stats = { "Aliança Digital": 0, "União Verde": 0, "Frente Social": 0, "Voto em Branco": 0 };
-        results.forEach(row => { stats[row.escolha] = row.total; });
-        res.json(stats);
+        if (err) return res.status(500).json(err);
+        res.json(results);
     });
 });
 
-// 4. Rota para VERIFICAR VOTO (para o teu novo login)
 app.get('/verificar-voto/:nif', (req, res) => {
-    const sql = "SELECT * FROM votos WHERE nif = ?";
-    db.query(sql, [req.params.nif], (err, results) => {
-        if (err) return res.status(500).send(err);
+    const nif = req.params.nif;
+    // Procuramos na tabela participacao pelo id_eleitor associado a este NIF
+    const sql = "SELECT * FROM participacao WHERE id_eleitor = (SELECT id_eleitor FROM eleitor WHERE nif = ?)";
+    db.query(sql, [nif], (err, results) => {
+        if (err) return res.json({ ja_votou: false });
         res.json({ ja_votou: results.length > 0 });
     });
 });
 
-// ROTA DE REGISTO (Cria o Eleitor)
-app.post('/registar', (req, res) => {
-    const { nome, data_nasc, genero, email, nif, validade_cc, password } = req.body;
+app.get('/resultados', (req, res) => {
+    // Esta query conta os votos por candidato e junta com o nome deles
+    const sql = `
+        SELECT c.nome_completo, c.nome_partido, COUNT(v.id_voto) as total_votos 
+        FROM candidato c
+        LEFT JOIN voto v ON c.id_candidato = v.id_candidato
+        GROUP BY c.id_candidato
+        ORDER BY total_votos DESC
+    `;
 
-    // Nomes das colunas conforme o novo SQL
-    const sql = `INSERT INTO Eleitor 
-        (nome_completo, data_nascimento, genero, email, NIF, data_validade_cc, palavra_passe) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-    db.query(sql, [nome, data_nasc, genero, email, nif, validade_cc, password], (err, result) => {
+    db.query(sql, (err, results) => {
         if (err) {
-            // Se o Trigger "maior_de_idade_eleitor" disparar, o erro vem aqui
-            console.error(err);
-            return res.status(400).json({ 
-                success: false, 
-                message: err.sqlMessage || "Erro ao registar eleitor." 
-            });
+            console.error("Erro ao obter resultados:", err);
+            return res.status(500).json({ success: false, message: err.sqlMessage });
         }
-        res.json({ success: true, message: "Registo efetuado com sucesso!" });
+        res.json(results);
     });
 });
 
-// AJUSTE NA ROTA DE LOGIN (Verifica NIF + password)
-app.post('/login', (req, res) => {
-    const { nif, password } = req.body; // 'password' vem do teu formulário HTML
-
-    // Nota: Usamos NIF (maiúsculas) e palavra_passe conforme o SQL do teu colega
-    const sql = "SELECT id_eleitor, nome_completo FROM Eleitor WHERE NIF = ? AND palavra_passe = ?";
-    
-    db.query(sql, [nif, password], (err, results) => {
-        if (err) return res.status(500).json(err);
-
-        if (results.length > 0) {
-            // Sucesso! Guardamos o ID e o Nome para usar no voto
-            res.json({ 
-                success: true, 
-                id: results[0].id_eleitor, 
-                nome: results[0].nome_completo 
-            });
-        } else {
-            res.status(401).json({ success: false, message: "NIF ou Chave incorretos!" });
-        }
-    });
-});
-app.listen(8000, () => console.log("Servidor Node.js na porta 8000"));
+app.listen(8000, () => console.log("Servidor a correr em http://localhost:8000"));
