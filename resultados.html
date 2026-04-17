@@ -78,37 +78,59 @@
 
     async function carregarResultados() {
         const container = document.getElementById('listaResultados');
+        console.log("1. Iniciei a função. O container é:", container);
         
         try {
+            console.log("2. A tentar fazer fetch ao servidor...");
             const response = await fetch('http://localhost:8000/resultados');
+
+            console.log("3. Resposta do servidor recebida. Status:", response.status);
             
             if (!response.ok) throw new Error("Erro ao contactar servidor");
             
             const dados = await response.json();
             
-            if (dados.length === 0) {
+            // Isto ajuda-te a ver no F12 se os dados estão a chegar bem
+            console.log("4. Dados recebidos do servidor:");
+            console.table(dados);
+            
+            if (!dados || dados.length === 0) {
+                console.warn("4a. A lista de dados veio vazia!");
                 container.innerHTML = "<div class='alert alert-info text-center'>Ainda não existem votos registados.</div>";
                 return;
             }
 
-            // Calcular total de votos para as percentagens
-            const totalVotosGlobal = dados.reduce((sum, item) => sum + item.total_votos, 0);
+            console.log("5. Teste da primeira linha: Nome =", dados[0].nome_completo, "| Votos =", dados[0].total_votos);
+            
+
+            // Calcular total de votos (garantindo que tratamos valores nulos como 0)
+            const totalVotosGlobal = dados.reduce((sum, item) => sum + (item.total_votos || 0), 0);
+            console.log("6. Total de votos somado:", totalVotosGlobal);
 
             let html = "";
             dados.forEach(item => {
-                // Calcular percentagem (evitar divisão por zero)
+                // Se o total_votos vier null do LEFT JOIN, passamos para 0
+                const votos = item.total_votos || 0;
+                const partido = item.nome_partido || "Sem Partido";
+                
+                // Calcular percentagem
                 const percentagem = totalVotosGlobal > 0 
-                    ? Math.round((item.total_votos / totalVotosGlobal) * 100) 
+                    ? Math.round((votos / totalVotosGlobal) * 100) 
                     : 0;
 
                 html += `
-                    <div class="resultado-item">
-                        <div class="candidato-info">
-                            <span>${item.nome_completo} <small class="text-muted">(${item.nome_partido})</small></span>
-                            <span>${item.total_votos} votos</span>
+                    <div class="resultado-item mb-4">
+                        <div class="candidato-info d-flex justify-content-between mb-1">
+                            <span>
+                                <strong style="font-size: 1.1rem;">${item.nome_completo}</strong> 
+                                <br>
+                                <small class="text-muted">${partido}</small>
+                            </span>
+                            <span class="badge bg-secondary d-flex align-items-center">${votos} votos</span>
                         </div>
-                        <div class="progress">
-                            <div class="progress-bar bg-primary" role="progressbar" 
+                        <div class="progress" style="height: 25px; border-radius: 12px; background-color: #e9ecef;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                                 role="progressbar" 
                                  style="width: ${percentagem}%" 
                                  aria-valuenow="${percentagem}" aria-valuemin="0" aria-valuemax="100">
                                  ${percentagem}%
@@ -118,13 +140,17 @@
                 `;
             });
 
+            console.log("7. HTML gerado com sucesso. A injetar...");
+
             container.innerHTML = html;
+            console.log("8. Injeção concluída!");
 
         } catch (error) {
-            console.error("Erro:", error);
+            console.error("Erro detalhado:", error);
             container.innerHTML = `
-                <div class='alert alert-danger text-center'>
-                    Erro ao carregar dados. Verifique se o servidor está ligado.
+                <div class='alert alert-danger text-center shadow-sm'>
+                    <strong>Erro de Ligação</strong><br>
+                    O servidor não enviou os dados. Verifique o terminal do Node.js.
                 </div>`;
         }
     }

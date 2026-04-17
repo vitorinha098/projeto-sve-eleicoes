@@ -110,18 +110,21 @@ app.get('/verificar-voto/:nif', (req, res) => {
 });
 
 app.get('/resultados', (req, res) => {
-    // Esta query conta os votos por candidato e junta com o nome deles
+    // Simplificamos: tiramos o JOIN com 'partido' porque a tabela não existe
     const sql = `
-        SELECT c.nome_completo, c.nome_partido, COUNT(v.id_voto) as total_votos 
+        SELECT 
+            c.nome_completo, 
+            c.id_partido, 
+            COUNT(v.id_voto) AS total_votos 
         FROM candidato c
         LEFT JOIN voto v ON c.id_candidato = v.id_candidato
-        GROUP BY c.id_candidato
+        GROUP BY c.id_candidato, c.nome_completo, c.id_partido
         ORDER BY total_votos DESC
     `;
 
     db.query(sql, (err, results) => {
         if (err) {
-            console.error("Erro ao obter resultados:", err);
+            console.error("Erro SQL nos resultados:", err.sqlMessage);
             return res.status(500).json({ success: false, message: err.sqlMessage });
         }
         res.json(results);
