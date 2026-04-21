@@ -24,26 +24,23 @@ db.connect(err => {
     console.log("Conectado ao MySQL com sucesso!");
 });
 
-// --- NOVA ROTA PARA VOTAR (Compatível com a BD do colega) ---
 app.post('/votar', (req, res) => {
     const { idEleitor, id_candidato, id_eleicao } = req.body;
 
-    // 1. Verificação corrigida
+    // Verificação doa dados
     if (!idEleitor || !id_candidato) {
         return res.status(400).json({ success: false, message: "Dados de voto incompletos!" });
     }
 
-    // 2. QUERY CORRIGIDA: Mudámos 'NIF' para 'id_eleitor' e adicionámos 'data_voto'
     const sqlParticipacao = "INSERT INTO participacao (id_eleicao, id_eleitor, data_voto) VALUES (?, ?, NOW())";
     
     db.query(sqlParticipacao, [id_eleicao || 1, idEleitor], (err) => {
         if (err) {
             console.error("Erro Participação:", err.sqlMessage);
-            // Aqui enviamos o erro real para o teu alert no browser
             return res.status(500).json({ success: false, message: "Erro na Tabela Participacao: " + err.sqlMessage });
         }
 
-        // 3. Registar o voto na tabela voto
+        // Registar o voto na tabela voto
         const sqlVoto = "INSERT INTO voto (id_candidato, id_eleicao) VALUES (?, ?)";
         db.query(sqlVoto, [id_candidato, id_eleicao || 1], (err) => {
             if (err) {
@@ -85,6 +82,36 @@ app.post('/registar', (req, res) => {
     });
 });
 
+// Rota para recuperar a password localmente
+app.post('/reset_password', (req, res) => {
+    const { nif, validade_cc, nova_passe } = req.body;
+
+    // 1. Verificamos se os dados batem certo com o que tens no Workbench local
+    const sqlVerificar = "SELECT * FROM eleitor WHERE NIF = ? AND data_validade_cc = ?";
+    
+    db.query(sqlVerificar, [nif, validade_cc], (err, results) => {
+        if (err) {
+            console.error("Erro SQL:", err);
+            return res.status(500).json({ success: false, message: "Erro na base de dados." });
+        }
+
+        if (results.length > 0) {
+            // 2. Dados corretos! Vamos atualizar a password
+            const sqlUpdate = "UPDATE eleitor SET palavra_passe = ? WHERE NIF = ?";
+            
+            db.query(sqlUpdate, [nova_passe, nif], (errUpdate) => {
+                if (errUpdate) return res.status(500).json({ success: false, message: "Erro ao atualizar." });
+                
+                console.log(`Password atualizada para o NIF: ${nif}`);
+                res.json({ success: true });
+            });
+        } else {
+            // Se o NIF ou a data não existirem
+            res.status(401).json({ success: false, message: "NIF ou Data de Validade incorretos." });
+        }
+    });
+});
+
 // --- LISTAR CANDIDATOS ---
 app.get('/candidatos', (req, res) => {
     const sql = `
@@ -101,7 +128,6 @@ app.get('/candidatos', (req, res) => {
 
 app.get('/verificar-voto/:nif', (req, res) => {
     const nif = req.params.nif;
-    // Procuramos na tabela participacao pelo id_eleitor associado a este NIF
     const sql = "SELECT * FROM participacao WHERE id_eleitor = (SELECT id_eleitor FROM eleitor WHERE nif = ?)";
     db.query(sql, [nif], (err, results) => {
         if (err) return res.json({ ja_votou: false });
@@ -110,7 +136,6 @@ app.get('/verificar-voto/:nif', (req, res) => {
 });
 
 app.get('/resultados', (req, res) => {
-    // Simplificamos: tiramos o JOIN com 'partido' porque a tabela não existe
     const sql = `
         SELECT 
             c.nome_completo, 

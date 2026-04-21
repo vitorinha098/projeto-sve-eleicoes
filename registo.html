@@ -62,7 +62,6 @@
             margin-bottom: 0.3rem;
         }
 
-        /* Estilo do Botão - Cópia exata do Login */
         .btn-primary {
             background-color: var(--primary-color);
             border: none;
@@ -82,11 +81,13 @@
             color: #6c757d;
         }
 
-        /* Link para voltar ao Login */
         .login-link {
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 600;
+            display: flex;
+            justify-content: center;
+            padding-top: 15px;
         }
 
         .login-link:hover {
@@ -140,6 +141,12 @@
         </div>
 
         <button type="submit" class="btn btn-primary w-100">Finalizar Registo</button>
+
+        <div class="login-link">
+            <a href="registo.html" class="text-decoration-none small text-primary fw-bold">
+                Já tem registo? Voltar para Login
+            </a>
+        </div>
     </form>
 </div>
 
@@ -168,7 +175,7 @@
         alert("Registo concluído!");
         window.location.href = 'login.html';
     } else {
-        // Aqui vai aparecer o erro do Trigger: "Erro! Não podes votar sendo menor de idade."
+        // Erro do Trigger: "Erro! Não podes votar sendo menor de idade."
         alert("Erro: " + result.message);
     }
 };
