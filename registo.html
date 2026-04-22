@@ -1,186 +1,239 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Recenseamento Eleitoral - Registo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-        :root {
-            --primary-color: #0d6efd; /* O azul do botão do Login */
-            --primary-hover: #0b5ed7; /* O azul mais escuro no hover */
-            --bg-color: #f4f7f6;      /* A cor de fundo da página de Login */
-            --text-color: #333;
-        }
+      :root {
+        --primary-color: #0d6efd; /* O azul do botão do Login */
+        --primary-hover: #0b5ed7; /* O azul mais escuro no hover */
+        --bg-color: #f4f7f6; /* A cor de fundo da página de Login */
+        --text-color: #333;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            color: var(--text-color);
-        }
+      .form-control::placeholder {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: rgba(20, 18, 18, 0.3);
+        font-style: italic;
+      }
 
-        /* Estilo do Cartão - Igual ao do Login */
-        .register-card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 10px; /* Cantos menos arredondados, mais corporativo */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Sombra suave */
-            width: 100%;
-            max-width: 520px; /* Ligeiramente mais largo para acomodar os campos duplos */
-            border-top: 5px solid var(--primary-color); /* Barra colorida no topo, comum em logins */
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--text-color);
+      }
 
-        .card-header-title {
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
+      /* Estilo do Cartão - Igual ao do Login */
+      .register-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra suave */
+        width: 100%;
+        max-width: 520px; /* Ligeiramente mais largo para acomodar os campos duplos */
+        border-top: 5px solid var(--primary-color); /* Barra colorida no topo, comum em logins */
+      }
 
-        /* Estilo dos Inputs - Focados e Limpos */
-        .form-control {
-            border-radius: 5px;
-            padding: 0.75rem;
-            border: 1px solid #ced4da;
-        }
+      .card-header-title {
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+      }
 
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-        }
+      /* Estilo dos Inputs - Focados e Limpos */
+      .form-control {
+        border-radius: 5px;
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+      }
 
-        .form-label {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #555;
-            margin-bottom: 0.3rem;
-        }
+      .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+      }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-            padding: 0.75rem;
-            font-weight: 600;
-            font-size: 1rem;
-            border-radius: 5px;
-            transition: background-color 0.2s ease;
-        }
+      .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 0.3rem;
+      }
 
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
+      /* Estilo do Botão - Cópia exata do Login */
+      .btn-primary {
+        background-color: var(--primary-color);
+        border: none;
+        padding: 0.75rem;
+        font-weight: 600;
+        font-size: 1rem;
+        border-radius: 15px;
+        transition: background-color 0.2s ease;
+      }
 
-        .form-text {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
+      .btn-primary:hover {
+        background-color: var(--primary-hover);
+      }
 
-        .login-link {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 600;
-            display: flex;
-            justify-content: center;
-            padding-top: 15px;
-        }
+      .form-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+      }
 
-        .login-link:hover {
-            text-decoration: underline;
-        }
+      /* Link para voltar ao Login */
+      .login-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .login-link:hover {
+        text-decoration: underline;
+      }
     </style>
-</head>
-<body>
-
-<div class="register-card">
-    <h3 class="text-center mb-4">Recenseamento Eleitoral</h3>
-    <form id="formRegisto">
+  </head>
+  <body>
+    <div class="register-card">
+      <h3 class="text-center mb-4">Criar Conta</h3>
+      <form id="formRegisto">
         <div class="mb-3">
-            <label class="form-label">Nome Completo</label>
-            <input type="text" class="form-control" id="nome" required>
+          <label class="form-label">Nome Completo</label>
+          <input
+            type="text"
+            class="form-control"
+            id="nome"
+            required
+            placeholder="Escreva o nome completo"
+          />
         </div>
 
         <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">NIF</label>
-                <input type="text" class="form-control" id="nif" maxlength="9" required>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">E-mail</label>
-                <input type="email" class="form-control" id="email" required>
-            </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">NIF</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nif"
+              maxlength="9"
+              required
+              placeholder="example: 123456789"
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">E-mail</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              required
+              placeholder="example@ex.com"
+            />
+          </div>
         </div>
 
         <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Data de Nascimento</label>
-                <input type="date" class="form-control" id="data_nasc" required>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Género</label>
-                <select class="form-select" id="genero" required>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Feminino">Feminino</option>
-                </select>
-            </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Data de Nascimento</label>
+            <input type="date" class="form-control" id="data_nasc" required />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Género</label>
+            <select class="form-select" id="genero" required>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+            </select>
+          </div>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Validade Cartão Cidadão</label>
-            <input type="date" class="form-control" id="validade_cc" required>
+          <label class="form-label">Validade Cartão Cidadão</label>
+          <input type="date" class="form-control" id="validade_cc" required />
         </div>
 
         <div class="mb-4">
-            <label class="form-label">Definir Palavra-Passe</label>
-            <input type="password" class="form-control" id="password" required>
+          <label class="form-label">Definir Palavra-Passe</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            required
+            placeholder="Escreva a password"
+          />
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">Finalizar Registo</button>
-
-        <div class="login-link">
-            <a href="registo.html" class="text-decoration-none small text-primary fw-bold">
-                Já tem registo? Voltar para Login
-            </a>
+        <div class="mb-4">
+          <label class="form-label"> Confirmar Palavra-Passe</label>
+          <input
+            type="password"
+            class="form-control"
+            id="confirm_password"
+            required
+            placeholder="Confirme a password"
+          />
         </div>
-    </form>
-</div>
 
-<script>
-    document.getElementById('formRegisto').onsubmit = async (e) => {
-    e.preventDefault();
+        <button type="submit" class="btn btn-primary w-100">
+          Finalizar Registo
+        </button>
+      </form>
+    </div>
 
-    const dados = {
-        nome: document.getElementById('nome').value,
-        nif: document.getElementById('nif').value,
-        email: document.getElementById('email').value,
-        data_nasc: document.getElementById('data_nasc').value,
-        genero: document.getElementById('genero').value,
-        validade_cc: document.getElementById('validade_cc').value,
-        password: document.getElementById('password').value
-    };
+    <script>
+      document.getElementById("formRegisto").onsubmit = async (e) => {
+        e.preventDefault();
 
-    const response = await fetch('http://127.0.0.1:8000/registar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-    });
+        // declara-se as duas variaveis
+        const password = document.getElementById("password").value;
+        const confirm_password =
+          document.getElementById("confirm_password").value;
 
-    const result = await response.json();
-    if (result.success) {
-        alert("Registo concluído!");
-        window.location.href = 'login.html';
-    } else {
-        // Erro do Trigger: "Erro! Não podes votar sendo menor de idade."
-        alert("Erro: " + result.message);
-    }
-};
-</script>
+        // compara as duas passes
+        if (password !== confirm_password) {
+          alert("As passwords não coincidem!");
+          return;
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+        const dados = {
+          nome: document.getElementById("nome").value,
+          nif: document.getElementById("nif").value,
+          email: document.getElementById("email").value,
+          data_nasc: document.getElementById("data_nasc").value,
+          genero: document.getElementById("genero").value,
+          validade_cc: document.getElementById("validade_cc").value,
+          password: password,
+        };
+
+        const response = await fetch("http://127.0.0.1:8000/registar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert("Registo concluído!");
+          window.location.href = "login.html";
+        } else {
+          // Aqui vai aparecer o erro do Trigger: "Erro! Não podes votar sendo menor de idade."
+          alert("Aviso do Servidor: " + result.message);
+        }
+      };
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

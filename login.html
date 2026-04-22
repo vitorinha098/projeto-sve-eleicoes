@@ -36,7 +36,6 @@
             z-index: -1;
         }
 
-        /* Card de Login Glassmorphism */
         .card-login {
             background: var(--glass);
             backdrop-filter: blur(15px);
@@ -69,7 +68,6 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
-        /* Botão Elite */
         .btn-login {
             background: var(--primary);
             color: white;
@@ -80,7 +78,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.3s;
-            margin-top: 1rem;
+            margin-top: 5px;
         }
 
         .btn-login:hover {
@@ -126,18 +124,21 @@
             </div>
 
             <div class="text-start mb-4">
-                <label class="form-label small fw-bold ms-1">Chave de Acesso</label>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label small fw-bold ms-1 mb-0">Chave de Acesso</label>
+                </div>
+                
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;">
                         <i class="bi bi-key text-muted"></i>
                     </span>
                     <input type="password" class="form-control border-start-0" id="passInput" placeholder="••••••••" required style="border-radius: 0 12px 12px 0;">
                 </div>
-            </div>
 
-            <div class="text-end mt-1">
-                    <a href="reset_password.html" class="text-decoration-none small text-primary fw-bold" style="font-size: 0.75rem;">Esqueceu a palavra-passe?</a>
-             </div>
+                <div class="text-end mt-1">
+                    <a href="Reset_password" class="text-decoration-none small text-primary fw-bold" style="font-size: 0.75rem;">Esqueceu a palavra-passe?</a>
+                </div>
+            </div>
 
             <button type="button" onclick="autenticar()" class="btn btn-login w-100 shadow-sm">
                 Entrar no Sistema
@@ -145,10 +146,7 @@
         </form>
 
         <div class="mt-4 pt-3 border-top">
-            Ainda não está recenseado? 
-            <a href="registo.html" class="text-decoration-none small text-primary fw-bold">
-                Registe-se aqui
-            </a>
+            <a>Ainda não tem conta?</a><a href="registo.html" class="text-decoration-none small text-primary fw-bold"> Registe-se aqui</a>
         </div>
     </div>
 
@@ -170,12 +168,12 @@
             if (data.success) {
 
                 alert("Login efetuado com sucesso! Bem-vindo(a), " + data.nome);
-                
+                // 1. Guardamos os dados primeiro
                 localStorage.setItem('nifEleitor', nif);
                 localStorage.setItem('nomeEleitor', data.nome);
                 localStorage.setItem('idEleitor', data.idEleitor);
 
-                // Verificacão antes de avançar para a votação 
+                // 2. AGORA fazemos a verificação ANTES de mudar de página
                 try {
                     const checkVoto = await fetch(`http://127.0.0.1:8000/verificar-voto/${nif}`);
                     const statusVoto = await checkVoto.json();
@@ -196,6 +194,7 @@
                 alert(data.message || "Dados de acesso incorretos!");
             }
         } catch (error) {
+            // Este alerta só vai aparecer se o servidor estiver MESMO desligado no login
             alert("Erro de ligação: O servidor Node.js está offline!");
         }
     } else {
