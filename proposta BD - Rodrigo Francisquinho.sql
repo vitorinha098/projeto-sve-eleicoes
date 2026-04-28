@@ -109,6 +109,18 @@
         on delete cascade
         on update restrict
     );
+
+    create table Inscricao_eleicao(
+        id_eleicao bigint,
+        id_eleitor bigint,
+        primary key(id_eleicao,id_eleitor),
+        foreign key(id_eleicao) references Eleicao(id_eleicao)
+        on delete cascade
+        on update restrict,
+        foreign key(id_eleitor) references Eleitor(id_eleitor)
+        on delete restrict
+        on update restrict  
+    );
     $$
 
 
@@ -183,13 +195,16 @@ begin
     
     set idade = Timestampdiff(year,new.data_nascimento,curdate());
     
-    if idade < 18 then
+    if new.data_nascimento > curdate() then
+		signal sqlstate '45000'
+        set message_text = 'Erro! Não podes nascer no futuro';
+	    
+	elseif idade < 18 then
 		signal sqlstate '45000'
         set message_text = 'Erro! Não podes votar sendo menor de idade.';
-        
 	end if;
 end$$
-delimiter ; 
+delimiter ;
 
 
 -- trigger 4
