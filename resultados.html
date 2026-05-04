@@ -1,127 +1,164 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVE - Resultados em Tempo Real</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .container {
-            margin-top: 50px;
-            max-width: 800px;
-        }
-        .card-resultados {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            background: white;
-            padding: 40px;
-        }
-        .header-title {
-            color: #0d6efd;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .progress {
-            height: 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-        .progress-bar {
-            font-weight: bold;
-            line-height: 30px;
-            font-size: 14px;
-        }
-        .candidato-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        .btn-sair {
-            margin-top: 30px;
-            border-radius: 10px;
-            padding: 10px;
-            font-weight: bold;
-        }
+      body {
+        background-color: #f8f9fa;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .container {
+        margin-top: 50px;
+        max-width: 800px;
+      }
+      .card-resultados {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        background: white;
+        padding: 40px;
+      }
+      .header-title {
+        color: #0d6efd;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .progress {
+        height: 30px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+      }
+      .progress-bar {
+        font-weight: bold;
+        line-height: 30px;
+        font-size: 14px;
+      }
+      .candidato-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+      .btn-sair {
+        margin-top: 30px;
+        border-radius: 10px;
+        padding: 10px;
+        font-weight: bold;
+      }
     </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="card-resultados">
+  </head>
+  <body>
+    <div class="container">
+      <div class="card-resultados">
         <h1 class="header-title">Resultados Parciais</h1>
-        <p class="text-center text-muted mb-5">Dados obtidos em tempo real do servidor SVE</p>
+        <p class="text-center text-muted mb-5">
+          Dados obtidos em tempo real do servidor SVE
+        </p>
 
         <div id="listaResultados">
-            <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">A carregar...</span>
-                </div>
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">A carregar...</span>
             </div>
+          </div>
         </div>
 
-        <button onclick="sair()" class="btn btn-outline-secondary w-100 btn-sair">Sair do Sistema</button>
-        <p class="text-center text-muted small mt-3">Os resultados são atualizados a cada acesso.</p>
+        <div class="text-center py-2">
+          <h5 class="text-secondary">
+            Total de Votos na Urna:
+            <span id="totalGlobal" class="badge bg-dark">0</span>
+          </h5>
+        </div>
+
+        <button
+          onclick="sair()"
+          class="btn btn-outline-secondary w-100 btn-sair"
+        >
+          Sair do Sistema
+        </button>
+
+        <hr />
+
+        <p class="text-center text-muted small mt-3">
+          Os resultados são atualizados a cada acesso.
+        </p>
+      </div>
     </div>
-</div>
 
-<script>
-    window.onload = async function() {
+    <script>
+      window.onload = async function () {
         await carregarResultados();
-    };
+      };
 
-    async function carregarResultados() {
-        const container = document.getElementById('listaResultados');
+      async function carregarResultados() {
+        const container = document.getElementById("listaResultados");
         console.log("1. Iniciei a função. O container é:", container);
-        
+
         try {
-            console.log("2. A tentar fazer fetch ao servidor...");
-            const response = await fetch('http://localhost:8000/resultados');
+          console.log("2. A tentar fazer fetch ao servidor...");
+          const response = await fetch("http://localhost:8000/resultados");
 
-            console.log("3. Resposta do servidor recebida. Status:", response.status);
-            
-            if (!response.ok) throw new Error("Erro ao contactar servidor");
-            
-            const dados = await response.json();
-            
-            console.log("4. Dados recebidos do servidor:");
-            console.table(dados);
-            
-            if (!dados || dados.length === 0) {
-                console.warn("4a. A lista de dados veio vazia!");
-                container.innerHTML = "<div class='alert alert-info text-center'>Ainda não existem votos registados.</div>";
-                return;
-            }
+          console.log(
+            "3. Resposta do servidor recebida. Status:",
+            response.status,
+          );
 
-            console.log("5. Teste da primeira linha: Nome =", dados[0].nome_completo, "| Votos =", dados[0].total_votos);
-            
+          if (!response.ok) throw new Error("Erro ao contactar servidor");
 
-            // Calcular total de votos (garantindo que tratamos valores nulos como 0)
-            const totalVotosGlobal = dados.reduce((sum, item) => sum + (item.total_votos || 0), 0);
-            console.log("6. Total de votos somado:", totalVotosGlobal);
+          const dados = await response.json();
 
-            let html = "";
-            dados.forEach(item => {
-                // Se o total_votos vier null do LEFT JOIN, passamos para 0
-                const votos = item.total_votos || 0;
-                const partido = item.nome_partido || "Sem Partido";
-                
-                // Calcular percentagem
-                const percentagem = totalVotosGlobal > 0 
-                    ? Math.round((votos / totalVotosGlobal) * 100) 
-                    : 0;
+          // Isto ajuda-te a ver no F12 se os dados estão a chegar bem
+          console.log("4. Dados recebidos do servidor:");
+          console.table(dados);
 
-                html += `
+          if (!dados || dados.length === 0) {
+            console.warn("4a. A lista de dados veio vazia!");
+            container.innerHTML =
+              "<div class='alert alert-info text-center'>Ainda não existem votos registados.</div>";
+            return;
+          }
+
+          console.log(
+            "5. Teste da primeira linha: Nome =",
+            dados[0].nome_completo,
+            "| Votos =",
+            dados[0].total_votos,
+          );
+
+          // Calcular total de votos (garantindo que tratamos valores nulos como 0)
+          const totalVotosGlobal = dados.reduce(
+            (sum, item) => sum + (item.total_votos || 0),
+            0,
+          );
+          console.log("6. Total de votos somado:", totalVotosGlobal);
+
+          document.getElementById("totalGlobal").innerText = totalVotosGlobal;
+
+          let html = "";
+          dados.forEach((item) => {
+            // Se o total_votos vier null do LEFT JOIN, passamos para 0
+            const nome = item.candidato;
+            const partido = item.partido;
+            const votos = item.total_votos || 0;
+
+            // Calcular percentagem
+            const percentagem =
+              totalVotosGlobal > 0
+                ? Math.round((votos / totalVotosGlobal) * 100)
+                : 0;
+
+            html += `
                     <div class="resultado-item mb-4">
                         <div class="candidato-info d-flex justify-content-between mb-1">
                             <span>
-                                <strong style="font-size: 1.1rem;">${item.nome_completo}</strong> 
+                                <strong style="font-size: 1.1rem;">${item.candidato}</strong> 
                                 <br>
                                 <small class="text-muted">${partido}</small>
                             </span>
@@ -137,28 +174,26 @@
                         </div>
                     </div>
                 `;
-            });
+          });
 
-            console.log("7. HTML gerado com sucesso. A injetar...");
+          console.log("7. HTML gerado com sucesso. A injetar...");
 
-            container.innerHTML = html;
-            console.log("8. Injeção concluída!");
-
+          container.innerHTML = html;
+          console.log("8. Injeção concluída!");
         } catch (error) {
-            console.error("Erro detalhado:", error);
-            container.innerHTML = `
+          console.error("Erro detalhado:", error);
+          container.innerHTML = `
                 <div class='alert alert-danger text-center shadow-sm'>
                     <strong>Erro de Ligação</strong><br>
                     O servidor não enviou os dados. Verifique o terminal do Node.js.
                 </div>`;
         }
-    }
+      }
 
-    function sair() {
+      function sair() {
         localStorage.clear();
-        window.location.href = 'login.html';
-    }
-</script>
-
-</body>
+        window.location.href = "login.html";
+      }
+    </script>
+  </body>
 </html>
