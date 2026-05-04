@@ -4,13 +4,29 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const bcrypt = require("bcrypt");
+const multer = require('multer');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // As fotos serão guardadas em public/assets/img/
+        cb(null, path.join(__dirname, 'public/assets/img/'));
+    },
+    filename: (req, file, cb) => {
+        // Nome único: timestamp + extensão original
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
 // Servir imagens da pasta 'img'
 app.use(express.static(path.join(__dirname, "img")));
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/img", express.static(path.join(__dirname, "public/assets/img")));
+
 
 // Configuração da Ligação Aiven Cloud
 const db = mysql.createConnection({
@@ -69,6 +85,28 @@ app.post("/votar", (req, res) => {
       res.json({ success: true });
     });
   });
+});
+
+
+// --- ROTA: CRIAR NOVO CANDIDATO (ADMIN) ---
+app.post("/criar-candidato", upload.single('foto'), (req, res) => {
+    const { nome_completo, genero, data_nascimento, descricao, id_partido } = req.body;
+    const fotoNome = req.file ? req.file.filename : 'default.png';
+
+    // Se id_partido estiver vazio, inserimos NULL
+    const partidoId = id_partido && id_partido !== "" ? id_partido : null;
+
+    const sql = `INSERT INTO candidato 
+        (nome_completo, genero, data_nascimento, foto, descricao, id_partido, id_eleicao) 
+        VALUES (?, ?, ?, ?, ?, ?, 1)`;
+
+    db.query(sql, [nome_completo, genero, data_nascimento, fotoNome, descricao, partidoId], (err, result) => {
+        if (err) {
+            console.error("Erro ao criar candidato:", err.sqlMessage);
+            return res.status(500).json({ success: false, message: err.sqlMessage });
+        }
+        res.json({ success: true, message: "Candidato criado com sucesso!" });
+    });
 });
 
 // -- Rota de Reset password
