@@ -14,10 +14,14 @@ app.use(express.static(path.join(__dirname, "img")));
 
 // Configuração da Ligação Aiven Cloud
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root",
-  database: "base_de_dados_pi",
+  host: "mysql-votacao-vitoria-51c4.e.aivencloud.com",
+  port: 11331,
+  user: "avnadmin",
+  password: process.env.DB_PASSWORD,
+  database: "defaultdb",
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 db.connect((err) => {
