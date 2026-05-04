@@ -1,117 +1,143 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>SVE - Boletim de Voto</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        :root { --verde-gov: #00441b; --ouro: #ffc107; }
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        .navbar { background-color: var(--verde-gov) !important; border-bottom: 4px solid var(--ouro); }
-        .card-candidato { border: none; border-radius: 15px; transition: 0.3s; background: white; }
-        .card-candidato:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-        .img-container { height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-        .img-partido { max-height: 100%; max-width: 100%; object-fit: contain; }
-        .btn-votar { background-color: var(--verde-gov); color: white; border-radius: 8px; font-weight: 600; }
-        .btn-votar:hover { background-color: #00662d; color: white; }
+      :root {
+        --verde-gov: #00441b;
+        --ouro: #ffc107;
+      }
+      body {
+        background-color: #f0f2f5;
+      }
+      .navbar {
+        background-color: var(--verde-gov) !important;
+        border-bottom: 4px solid var(--ouro);
+      }
+      .card-candidato {
+        border-radius: 15px;
+        transition: 0.3s;
+        background: white;
+        border: none;
+      }
+      .card-candidato:hover {
+        transform: translateY(-5px);
+        shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      .img-container {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .img-partido {
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .btn-votar {
+        background-color: var(--verde-gov);
+        color: white;
+        font-weight: bold;
+      }
     </style>
-</head>
-<body>
-
-<nav class="navbar navbar-dark shadow-sm mb-4">
-    <div class="container">
+  </head>
+  <body>
+    <nav class="navbar navbar-dark mb-4">
+      <div class="container">
         <span class="navbar-brand fw-bold">SVE - SISTEMA DE VOTO</span>
-        <span class="navbar-text text-white">
-            Bem-vindo(a), <span id="exibirEleitor" class="text-warning">...</span> | 
-            <a href="login.html" class="text-white text-decoration-none ms-2" onclick="localStorage.clear()">Sair</a>
-        </span>
+        <span class="text-white"
+          >Bem-vindo(a),
+          <span id="exibirEleitor" class="text-warning">...</span></span
+        >
+      </div>
+    </nav>
+
+    <div class="container text-center">
+      <h2 class="mb-5">Boletim de Voto Oficial</h2>
+      <div id="listaCandidatos" class="row g-4 justify-content-center">
+        <!-- Candidatos aparecem aqui -->
+      </div>
     </div>
-</nav>
 
-<div class="container text-center">
-    <h2 class="display-6 fw-bold mb-5" style="color: var(--verde-gov);">Boletim de Voto Oficial</h2>
-    <div id="listaCandidatos" class="row g-4 justify-content-center">
-        </div>
-</div>
-
-<script>
-    window.onload = async function() {
-        const nomeEleitor = localStorage.getItem('nomeEleitor');
-        document.getElementById('exibirEleitor').innerText = nomeEleitor || "Utilizador";
+    <script>
+      async function carregarCandidatos() {
+        const container = document.getElementById("listaCandidatos");
+        const nomeEleitor = localStorage.getItem("nomeEleitor");
+        document.getElementById("exibirEleitor").innerText =
+          nomeEleitor || "Utilizador";
 
         try {
-            
-            const response = await fetch('http://localhost:8000/candidatos');
-            const candidatos = await response.json();
-            const container = document.getElementById('listaCandidatos');
-            container.innerHTML = "";
+          const response = await fetch("http://localhost:8000/candidatos");
+          const candidatos = await response.json();
+          container.innerHTML = "";
 
-            candidatos.forEach(c => {
-                // Chamamos a imagem diretamente pelo nome (ex: ps.png)
-                const foto = c.foto ? c.foto : 'default.png';
-                
-                container.innerHTML += `
+          candidatos.forEach((c) => {
+            container.innerHTML += `
                     <div class="col-md-4">
-                        <div class="card h-100 p-4 card-candidato shadow-sm">
-                            <div class="img-container">
-                                <img src="http://localhost:8000/${foto}" class="img-partido" alt="Logo">
+                        <div class="card card-candidato p-4 shadow-sm">
+                            <div class="img-container mb-3">
+                                <img src="http://localhost:8000/${c.foto}" class="img-partido">
                             </div>
                             <h4 class="fw-bold">${c.nome_completo}</h4>
-                            <p class="text-uppercase small fw-bold text-muted">${c.nome_partido}</p>
-                            <button class="btn btn-votar w-100 py-2" onclick="confirmarVoto(${c.id_candidato}, '${c.nome_completo}')">
-                                VOTAR
-                            </button>
+                            <p class="text-muted small">${c.nome_partido}</p>
+                            <button class="btn btn-votar w-100" onclick="confirmarVoto(${c.id_candidato}, '${c.nome_completo}')">VOTAR</button>
                         </div>
-                    </div>
-                `;
-            });
+                    </div>`;
+          });
         } catch (error) {
-            container.innerHTML = "<div class='alert alert-danger'>Erro ao ligar ao servidor.</div>";
+          container.innerHTML =
+            "<div class='alert alert-danger'>Erro ao carregar candidatos.</div>";
         }
-    };
+      }
 
-    function confirmarVoto(id, nome) {
+      function confirmarVoto(id, nome) {
         if (confirm(`Confirma o seu voto em ${nome}?`)) processarVoto(id);
-    }
+      }
 
-    async function processarVoto(idCandidato) {
-            // 1. Verifica se o idEleitor está mesmo no localStorage
-            const idEleitor = localStorage.getItem('idEleitor');
+      async function processarVoto(idCandidato) {
+        const idEleitor = localStorage.getItem("idEleitor");
+        try {
+          const response = await fetch("http://localhost:8000/votar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id_candidato: idCandidato,
+              idEleitor: idEleitor,
+              id_eleicao: 1,
+            }),
+          });
 
-            console.log("ID Eleitor recuperado:", idEleitor);
-            console.log("ID Candidato selecionado:", idCandidato);
-            
-            if (!idEleitor) {
-                alert("Erro: Sessão expirada. Por favor, faça login novamente.");
-                window.location.href = 'login.html';
-                return;
-            }           
+          const result = await response.json();
 
-            try {
-                const response = await fetch('http://localhost:8000/votar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        id_candidato: idCandidato, 
-                        idEleitor: idEleitor,
-                        id_eleicao: 1 
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert("Voto registado com sucesso!");
-                    window.location.href = 'resultados.html';
-                } else {
-                    // Aqui usamos result.message que definimos no server.js
-                    alert("Não foi possível votar: " + (result.message || "Erro desconhecido"));
-                    }
-                } catch (error) {
-                    console.error("Erro detalhado:", error);
-                    alert("Erro na comunicação: " + error.message);
-                }
+          if (response.ok && result.success) {
+            alert("Voto registado com sucesso!");
+            window.location.href = "resultados.html";
+          } else {
+            if (
+              result.message.includes("Já votou") ||
+              result.message.includes("Duplicate entry")
+            ) {
+              alert(
+                "Atenção: O seu voto já se encontra registado no sistema para esta eleição!",
+              );
+              window.location.href = "resultados.html";
+            } else {
+              alert("Erro: " + result.message);
+              window.location.href = "resultados.html";
+            }
+          }
+        } catch (error) {
+          console.error("Erro de rede:", error);
+          alert("Não foi possível contactar o servidor.");
         }
-</script>
-</body>
+      }
+
+      window.onload = carregarCandidatos;
+    </script>
+  </body>
 </html>
