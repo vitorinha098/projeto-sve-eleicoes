@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
@@ -10,13 +12,14 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+app.use("/img", express.static(path.join(__dirname, "public/assets/img")));
+
+// Configuração do Multer (onde ele guarda os novos envios)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // As fotos serão guardadas em public/assets/img/
-        cb(null, path.join(__dirname, 'public/assets/img/'));
+        cb(null, path.join(__dirname, 'public/assets/img'));
     },
     filename: (req, file, cb) => {
-        // Nome único: timestamp + extensão original
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
@@ -24,8 +27,6 @@ const upload = multer({ storage: storage });
 
 // Servir imagens da pasta 'img'
 app.use(express.static(path.join(__dirname, "img")));
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/img", express.static(path.join(__dirname, "public/assets/img")));
 
 
 // Configuração da Ligação Aiven Cloud
@@ -61,7 +62,7 @@ app.post("/votar", (req, res) => {
 
   // 2. QUERY CORRIGIDA: Mudámos 'NIF' para 'id_eleitor' e adicionámos 'data_voto'
   const sqlParticipacao =
-    "INSERT INTO participacao (id_eleicao, id_eleitor, data_voto) VALUES (?, ?, NOW())";
+    "INSERT INTO Participacao (id_eleicao, id_eleitor, data_voto) VALUES (?, ?, NOW())";
 
   db.query(sqlParticipacao, [id_eleicao || 1, idEleitor], (err) => {
     if (err) {
@@ -74,7 +75,7 @@ app.post("/votar", (req, res) => {
     }
 
     // 3. Registar o voto na tabela voto
-    const sqlVoto = "INSERT INTO voto (id_candidato, id_eleicao) VALUES (?, ?)";
+    const sqlVoto = "INSERT INTO Voto (id_candidato, id_eleicao) VALUES (?, ?)";
     db.query(sqlVoto, [id_candidato, id_eleicao || 1], (err) => {
       if (err) {
         console.error("Erro Voto:", err);
@@ -96,7 +97,7 @@ app.post("/criar-candidato", upload.single('foto'), (req, res) => {
     // Se id_partido estiver vazio, inserimos NULL
     const partidoId = id_partido && id_partido !== "" ? id_partido : null;
 
-    const sql = `INSERT INTO candidato 
+    const sql = `INSERT INTO Candidato 
         (nome_completo, genero, data_nascimento, foto, descricao, id_partido, id_eleicao) 
         VALUES (?, ?, ?, ?, ?, ?, 1)`;
 
@@ -115,7 +116,7 @@ app.post("/reset_password", async (req, res) => {
 
   try {
     const mudanca_passe =
-      "Update eleitor set palavra_passe = ? where NIF = ? and data_validade_cc = ?";
+      "Update Eleitor set palavra_passe = ? where NIF = ? and data_validade_cc = ?";
     const Password_hashed = await bcrypt.hash(nova_passe, 10);
 
     db.query(
@@ -150,7 +151,7 @@ app.post("/login", (req, res) => {
   const { nif, password } = req.body;
 
   const sql =
-    "SELECT id_eleitor, nome_completo, palavra_passe FROM eleitor WHERE NIF = ?";
+    "SELECT id_eleitor, nome_completo, palavra_passe FROM Eleitor WHERE NIF = ?";
 
   db.query(sql, [nif], async (err, results) => {
     if (err) return res.status(500).json(err);
@@ -193,7 +194,7 @@ app.get("/verificar-voto/:nif", (req, res) => {
   const nif = req.params.nif;
   // Procuramos na tabela participacao pelo id_eleitor associado a este NIF
   const sql =
-    "SELECT * FROM participacao WHERE id_eleitor = (SELECT id_eleitor FROM eleitor WHERE nif = ?)";
+    "SELECT * FROM Participacao WHERE id_eleitor = (SELECT id_eleitor FROM Eleitor WHERE nif = ?)";
   db.query(sql, [nif], (err, results) => {
     if (err) return res.json({ ja_votou: false });
     res.json({ ja_votou: results.length > 0 });
@@ -207,10 +208,12 @@ app.get("/resultados", (req, res) => {
     SELECT 
       c.nome_completo AS nome_completo, 
       p.nome AS nome_partido, 
+      c.foto AS foto_candidato, 
+      p.foto AS logo_partido,
       COUNT(v.id_voto) AS total_votos
     FROM Candidato c
     LEFT JOIN Voto v ON c.id_candidato = v.id_candidato
-    INNER JOIN Partido p ON c.id_partido = p.id_partido
+    LEFT JOIN Partido p ON c.id_partido = p.id_partido
     GROUP BY c.id_candidato, c.nome_completo, p.nome
     ORDER BY total_votos DESC;
   `;

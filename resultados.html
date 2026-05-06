@@ -10,48 +10,49 @@
     />
     <style>
       body {
-        background-color: #f8f9fa;
+        background-color: #f4f6f8;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       }
-      .container {
-        margin-top: 50px;
-        max-width: 800px;
-      }
+      .container { margin-top: 50px; max-width: 820px; }
       .card-resultados {
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        background: white;
-        padding: 40px;
+        border: none; border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        background: white; padding: 40px;
       }
-      .header-title {
-        color: #0d6efd;
-        font-weight: 800;
-        text-align: center;
-        margin-bottom: 10px;
+      .header-title { color: #0d6efd; font-weight: 800; text-align: center; margin-bottom: 4px; }
+
+      /* Linha de resultado */
+      .resultado-item { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+
+      /* Círculos de imagem */
+      .logo-circulo {
+        width: 38px; height: 38px; border-radius: 50%;
+        border: 1px solid #dee2e6; background: #f0f2f5;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 600; color: #6c757d;
+        overflow: hidden; flex-shrink: 0;
       }
-      .progress {
-        height: 30px;
-        border-radius: 15px;
-        margin-bottom: 20px;
+      .logo-circulo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+      .logos-grupo { display: flex; gap: 5px; flex-shrink: 0; }
+
+      /* Nome e partido */
+      .nome-bloco { min-width: 140px; max-width: 140px; }
+      .nome-bloco .nome { font-size: 13px; font-weight: 600; color: #212529; line-height: 1.3; }
+      .nome-bloco .partido { font-size: 11px; color: #6c757d; }
+
+      /* Barra */
+      .barra-container { flex: 1; display: flex; align-items: center; gap: 10px; }
+      .barra-track {
+        flex: 1; height: 24px;
+        background: #e9ecef; border-radius: 6px; overflow: hidden;
       }
-      .progress-bar {
-        font-weight: bold;
-        line-height: 30px;
-        font-size: 14px;
+      .barra-fill {
+        height: 100%; border-radius: 6px;
+        display: flex; align-items: center; padding-left: 8px;
+        font-size: 12px; font-weight: 600; color: white;
+        transition: width 0.5s ease;
       }
-      .candidato-info {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
-        font-weight: 600;
-      }
-      .btn-sair {
-        margin-top: 30px;
-        border-radius: 10px;
-        padding: 10px;
-        font-weight: bold;
-      }
+      .votos-label { font-size: 12px; font-weight: 500; color: #6c757d; min-width: 60px; text-align: right; }
     </style>
   </head>
   <body>
@@ -142,38 +143,47 @@
           document.getElementById("totalGlobal").innerText = totalVotosGlobal;
 
           let html = "";
-          dados.forEach((item) => {
-            // Se o total_votos vier null do LEFT JOIN, passamos para 0
-            const nome = item.candidato;
-            const partido = item.partido;
-            const votos = item.total_votos || 0;
+          // Paleta de cores para as barras
+          const cores = ["#0d6efd","#198754","#dc3545","#fd7e14","#6f42c1","#20c997"];
 
-            // Calcular percentagem
-            const percentagem =
-              totalVotosGlobal > 0
-                ? Math.round((votos / totalVotosGlobal) * 100)
-                : 0;
+          dados.forEach((item, i) => {
+            const nome    = item.nome_completo || "Sem Nome";
+            const partido = item.nome_partido  || "Independente";
+            const votos   = item.total_votos   || 0;
+            const pct     = totalVotosGlobal > 0 ? Math.round((votos / totalVotosGlobal) * 100) : 0;
+            const cor     = cores[i % cores.length];
+
+            const urlBase = "http://localhost:8000/img/";
+
+            const imgPartido = item.logo_partido 
+              ? `<img src="${urlBase}${item.logo_partido}" onerror="this.style.display='none'">` 
+              : item.nome_partido ? item.nome_partido.charAt(0) : "I";
+
+          
+            const imgCandidato = item.foto_candidato 
+              ? `<img src="${urlBase}${item.foto_candidato}" onerror="this.style.display='none'">` 
+              : item.nome_completo ? item.nome_completo.charAt(0) : "C";
 
             html += `
-                    <div class="resultado-item mb-4">
-                        <div class="candidato-info d-flex justify-content-between mb-1">
-                            <span>
-                                <strong style="font-size: 1.1rem;">${item.candidato}</strong> 
-                                <br>
-                                <small class="text-muted">${partido}</small>
-                            </span>
-                            <span class="badge bg-secondary d-flex align-items-center">${votos} votos</span>
-                        </div>
-                        <div class="progress" style="height: 25px; border-radius: 12px; background-color: #e9ecef;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
-                                 role="progressbar" 
-                                 style="width: ${percentagem}%" 
-                                 aria-valuenow="${percentagem}" aria-valuemin="0" aria-valuemax="100">
-                                 ${percentagem}%
-                            </div>
-                        </div>
+              <div class="resultado-item">
+                <div class="logos-grupo">
+                  <div class="logo-circulo" title="${partido}">${imgPartido}</div>
+                  <div class="logo-circulo" title="${nome}">${imgCandidato}</div>
+                </div>
+                <div class="nome-bloco">
+                  <div class="nome">${nome}</div>
+                  <div class="partido">${partido}</div>
+                </div>
+                <div class="barra-container">
+                  <div class="barra-track">
+                    <div class="barra-fill" style="width:${pct}%; background:${cor};">
+                      ${pct > 8 ? pct + '%' : ''}
                     </div>
-                `;
+                  </div>
+                  <span class="votos-label">${votos.toLocaleString('pt-PT')} v</span>
+                </div>
+              </div>
+            `;
           });
 
           console.log("7. HTML gerado com sucesso. A injetar...");
