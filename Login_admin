@@ -121,7 +121,13 @@
   <body>
     <div class="card-login text-center">
       <div class="mb-4">
-        <img src="img/sve.png" alt="SVE Logo" class="brand-logo" />
+        <img
+          src="sve.png"
+          alt="SVE Logo"
+          class="brand-logo"
+          alt="SVE Logo"
+          class="brand-logo"
+        />
         <h2
           class="fw-extrabold mb-1"
           style="font-weight: 800; letter-spacing: -1px"
@@ -234,6 +240,7 @@
               localStorage.setItem("emailAdmin", email);
               localStorage.setItem("nomeAdmin", data.nome);
               localStorage.setItem("idAdmin", data.idAdministrador);
+              window.location.href = "dashboard_admin.html";
             } else {
               alert(data.message || "Dados de acesso incorretos!");
             }
