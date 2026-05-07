@@ -10,7 +10,6 @@
         genero enum('Masculino','Feminino'),
         email varchar(100) unique
             check (email regexp '^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\\.[a-zA-Z]{2,}$'),
-        -- perceber como funciona o hash
         palavra_passe varchar(255),
         NIF char(9) unique,
         data_validade_cc date not null,
@@ -24,7 +23,6 @@
         data_nascimento date,
         email varchar(100) unique
             check (email regexp '^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\\.[a-zA-Z]{2,}$'),
-        -- perceber como funciona o hash
         palavra_passe varchar(255)
     );
 

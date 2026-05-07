@@ -188,6 +188,38 @@ app.post("/reset_password", async (req, res) => {
   }
 });
 
+// Rota de Reset password administrador
+app.post("/reset_password_administrador", async (req, res) => {
+  const { email, nova_passe } = req.body;
+
+  try {
+    const mudanca_passe =
+      "Update Administrador set palavra_passe = ? where email = ?";
+    const Password_hashed = await bcrypt.hash(nova_passe, 10);
+
+    db.query(mudanca_passe, [Password_hashed, email], (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: err.sqlMessage,
+        });
+      }
+
+      if (result.affectedRows > 0) {
+        res.json({ success: true, message: "Palavra-passe alterada!" });
+      } else {
+        res.status(401).json({
+          success: false,
+          message:
+            "Não foi possivel encontrar nenhum utilizador com os esses dados de acesso.",
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Erro ao processar." });
+  }
+});
+
 // ROTA DE LOGIN
 app.post("/login", (req, res) => {
   const { nif, password } = req.body;
