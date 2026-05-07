@@ -112,7 +112,7 @@ app.post("/registar_administrador", async (req, res) => {
   const { nome, data_nasc, email, password } = req.body;
   try {
     const Password_hashed = await bcrypt.hash(password, 10);
-    const sql = `INSERT INTO Administrador (nome_completo, data_nascimento, email, palavra_passe) VALUES (?, ?, ?, ?)`;
+    const sql = `INSERT INTO Administrador (nome, data_nascimento, email, palavra_passe) VALUES (?, ?, ?, ?)`;
     db.query(sql, [nome, data_nasc, email, Password_hashed], (err) => {
       if (err)
         return res

@@ -249,7 +249,12 @@
         const result = await response.json();
         if (result.success) {
           alert("Registo concluído!");
-          window.location.href = "login.html";
+
+          if(tipo_conta == "Administrador"){
+            window.location.href = "login_admin.html";
+          }else{
+            window.location.href = "login.html";
+          }         
         } else {
           // Aqui vai aparecer o erro do Trigger
           alert("Aviso do Servidor: " + result.message);
