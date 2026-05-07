@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const express = require("express");
 const mysql = require("mysql2");
@@ -6,7 +6,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const bcrypt = require("bcrypt");
-const multer = require('multer');
+const multer = require("multer");
 
 const app = express();
 app.use(cors());
@@ -16,18 +16,17 @@ app.use("/img", express.static(path.join(__dirname, "public/assets/img")));
 
 // Configuração do Multer (onde ele guarda os novos envios)
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, 'public/assets/img'));
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "public/assets/img"));
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
 });
 const upload = multer({ storage: storage });
 
 // Servir imagens da pasta 'img'
 app.use(express.static(path.join(__dirname, "img")));
-
 
 // Configuração da Ligação Aiven Cloud
 const db = mysql.createConnection({
@@ -37,8 +36,8 @@ const db = mysql.createConnection({
   password: process.env.DB_PASSWORD,
   database: "defaultdb",
   ssl: {
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false,
+  },
 });
 
 db.connect((err) => {
@@ -49,25 +48,22 @@ db.connect((err) => {
   console.log("SUCESSO: Conectado ao MySQL na Cloud!");
 });
 
-// --- NOVA ROTA PARA VOTAR (Compatível com a BD do colega) ---
+// rota para votar
 app.post("/votar", (req, res) => {
   const { idEleitor, id_candidato, id_eleicao } = req.body;
 
-  // 1. Verificação corrigida
   if (!idEleitor || !id_candidato) {
     return res
       .status(400)
       .json({ success: false, message: "Dados de voto incompletos!" });
   }
 
-  // 2. QUERY CORRIGIDA: Mudámos 'NIF' para 'id_eleitor' e adicionámos 'data_voto'
   const sqlParticipacao =
     "INSERT INTO Participacao (id_eleicao, id_eleitor, data_voto) VALUES (?, ?, NOW())";
 
   db.query(sqlParticipacao, [id_eleicao || 1, idEleitor], (err) => {
     if (err) {
       console.error("Erro Participação:", err.sqlMessage);
-      // Aqui enviamos o erro real para o teu alert no browser
       return res.status(500).json({
         success: false,
         message: "Erro na Tabela Participacao: " + err.sqlMessage,
@@ -88,29 +84,75 @@ app.post("/votar", (req, res) => {
   });
 });
 
+// rota registrar eleitor
+app.post("/registar", async (req, res) => {
+  const { nome, data_nasc, genero, email, nif, validade_cc, password } =
+    req.body;
+  try {
+    const Password_hashed = await bcrypt.hash(password, 10);
+    const sql = `INSERT INTO Eleitor (nome_completo, data_nascimento, genero, email, NIF, data_validade_cc, palavra_passe) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    db.query(
+      sql,
+      [nome, data_nasc, genero, email, nif, validade_cc, Password_hashed],
+      (err) => {
+        if (err)
+          return res
+            .status(400)
+            .json({ success: false, message: err.sqlMessage });
+        res.json({ success: true });
+      },
+    );
+  } catch (e) {
+    res.status(500).json({ success: false });
+  }
+});
 
-// --- ROTA: CRIAR NOVO CANDIDATO (ADMIN) ---
-app.post("/criar-candidato", upload.single('foto'), (req, res) => {
-    const { nome_completo, genero, data_nascimento, descricao, id_partido } = req.body;
-    const fotoNome = req.file ? req.file.filename : 'default.png';
+// rota registrar administrador
+app.post("/registar_administrador", async (req, res) => {
+  const { nome, data_nasc, email, password } = req.body;
+  try {
+    const Password_hashed = await bcrypt.hash(password, 10);
+    const sql = `INSERT INTO Administrador (nome_completo, data_nascimento, email, palavra_passe) VALUES (?, ?, ?, ?)`;
+    db.query(sql, [nome, data_nasc, email, Password_hashed], (err) => {
+      if (err)
+        return res
+          .status(400)
+          .json({ success: false, message: err.sqlMessage });
+      res.json({ success: true });
+    });
+  } catch (e) {
+    res.status(500).json({ success: false });
+  }
+});
 
-    // Se id_partido estiver vazio, inserimos NULL
-    const partidoId = id_partido && id_partido !== "" ? id_partido : null;
+// rota para criar candidato
+app.post("/criar-candidato", upload.single("foto"), (req, res) => {
+  const { nome_completo, genero, data_nascimento, descricao, id_partido } =
+    req.body;
+  const fotoNome = req.file ? req.file.filename : "default.png";
 
-    const sql = `INSERT INTO Candidato 
+  const partidoId = id_partido && id_partido !== "" ? id_partido : null;
+
+  const sql = `INSERT INTO candidato 
         (nome_completo, genero, data_nascimento, foto, descricao, id_partido, id_eleicao) 
         VALUES (?, ?, ?, ?, ?, ?, 1)`;
 
-    db.query(sql, [nome_completo, genero, data_nascimento, fotoNome, descricao, partidoId], (err, result) => {
-        if (err) {
-            console.error("Erro ao criar candidato:", err.sqlMessage);
-            return res.status(500).json({ success: false, message: err.sqlMessage });
-        }
-        res.json({ success: true, message: "Candidato criado com sucesso!" });
-    });
+  db.query(
+    sql,
+    [nome_completo, genero, data_nascimento, fotoNome, descricao, partidoId],
+    (err, result) => {
+      if (err) {
+        console.error("Erro ao criar candidato:", err.sqlMessage);
+        return res
+          .status(500)
+          .json({ success: false, message: err.sqlMessage });
+      }
+      res.json({ success: true, message: "Candidato criado com sucesso!" });
+    },
+  );
 });
 
-// -- Rota de Reset password
+// Rota de Reset password
 app.post("/reset_password", async (req, res) => {
   const { nif, validade_cc, nova_passe } = req.body;
 
@@ -146,7 +188,39 @@ app.post("/reset_password", async (req, res) => {
   }
 });
 
-// --- ROTA DE LOGIN ---
+// Rota de Reset password administrador
+app.post("/reset_password_administrador", async (req, res) => {
+  const { email, nova_passe } = req.body;
+
+  try {
+    const mudanca_passe =
+      "Update Administrador set palavra_passe = ? where email = ?";
+    const Password_hashed = await bcrypt.hash(nova_passe, 10);
+
+    db.query(mudanca_passe, [Password_hashed, email], (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: err.sqlMessage,
+        });
+      }
+
+      if (result.affectedRows > 0) {
+        res.json({ success: true, message: "Palavra-passe alterada!" });
+      } else {
+        res.status(401).json({
+          success: false,
+          message:
+            "Não foi possivel encontrar nenhum utilizador com os esses dados de acesso.",
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Erro ao processar." });
+  }
+});
+
+// ROTA DE LOGIN
 app.post("/login", (req, res) => {
   const { nif, password } = req.body;
 
@@ -171,13 +245,56 @@ app.post("/login", (req, res) => {
           idEleitor: eleitor.id_eleitor,
         });
       } else {
-        res.status(401).json({ success: false, message: "Palavra-passe incorreta!" });
+        res
+          .status(401)
+          .json({ success: false, message: "Palavra-passe incorreta!" });
       }
-    } else { res.status(401).json({ success: false, message: "NIF não encontrado!" }); }
+    } else {
+      res
+        .status(401)
+        .json({ success: false, message: "Email não encontrado!" });
+    }
   });
 });
 
-// --- LISTAR CANDIDATOS ---
+// Rota de login administrador
+app.post("/login_administrador", (req, res) => {
+  const { email, password } = req.body;
+
+  const sql =
+    "SELECT id_administrador, nome, palavra_passe FROM Administrador WHERE email = ?";
+
+  db.query(sql, [email], async (err, results) => {
+    if (err) return res.status(500).json(err);
+    if (results.length > 0) {
+      const administrador = results[0];
+
+      // encripta a password dada e compara com a da conta criada
+      const comparar_hashes = await bcrypt.compare(
+        password,
+        administrador.palavra_passe,
+      );
+
+      if (comparar_hashes) {
+        res.json({
+          success: true,
+          nome: administrador.nome,
+          idAdministrador: administrador.id_administrador,
+        });
+      } else {
+        res
+          .status(401)
+          .json({ success: false, message: "Palavra-passe incorreta!" });
+      }
+    } else {
+      res
+        .status(401)
+        .json({ success: false, message: "Email não encontrado!" });
+    }
+  });
+});
+
+// LISTAR CANDIDATOS
 app.get("/candidatos", (req, res) => {
   const sql = `
     SELECT c.id_candidato, c.nome_completo, p.nome AS nome_partido, p.foto 

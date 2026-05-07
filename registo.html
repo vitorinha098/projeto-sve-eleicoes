@@ -15,9 +15,9 @@
 
     <style>
       :root {
-        --primary-color: #0d6efd; /* O azul do botão do Login */
-        --primary-hover: #0b5ed7; /* O azul mais escuro no hover */
-        --bg-color: #f4f7f6; /* A cor de fundo da página de Login */
+        --primary-color: #0d6efd;
+        --primary-hover: #0b5ed7;
+        --bg-color: #f4f7f6;
         --text-color: #333;
       }
 
@@ -38,15 +38,14 @@
         color: var(--text-color);
       }
 
-      /* Estilo do Cartão - Igual ao do Login */
       .register-card {
         background: white;
         padding: 2.5rem;
         border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra suave */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         width: 100%;
-        max-width: 520px; /* Ligeiramente mais largo para acomodar os campos duplos */
-        border-top: 5px solid var(--primary-color); /* Barra colorida no topo, comum em logins */
+        max-width: 520px;
+        border-top: 5px solid var(--primary-color);
       }
 
       .card-header-title {
@@ -55,7 +54,6 @@
         margin-bottom: 0.5rem;
       }
 
-      /* Estilo dos Inputs - Focados e Limpos */
       .form-control {
         border-radius: 5px;
         padding: 0.75rem;
@@ -149,13 +147,21 @@
           <div class="col-md-6 mb-3">
             <label class="form-label">Data de Nascimento</label>
             <input type="date" class="form-control" id="data_nasc" required />
-          </div>          
-          
+          </div>
+
           <div class="col-md-6 mb-3">
             <label class="form-label">Género</label>
             <select class="form-select" id="genero" required>
+              <option value="Indefinido"></option>
               <option value="Masculino">Masculino</option>
-              <option value="Feminino">Feminino</option>
+              <option value="Feminino">Feminino</option></select
+            ><br />
+
+            <label class="form-label">Tipo de conta</label>
+            <select class="form-select" id="Tipo_conta" required>
+              <option value="Indefinido"></option>
+              <option value="Eleitor">Eleitor</option>
+              <option value="Administrador">Administrador</option>
             </select>
           </div>
         </div>
@@ -197,7 +203,6 @@
       document.getElementById("formRegisto").onsubmit = async (e) => {
         e.preventDefault();
 
-        // declara-se as duas variaveis
         const password = document.getElementById("password").value;
         const confirm_password =
           document.getElementById("confirm_password").value;
@@ -218,18 +223,35 @@
           password: password,
         };
 
-        const response = await fetch("http://127.0.0.1:8000/registar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dados),
-        });
+        const tipo_conta = document.getElementById("Tipo_conta").value;
+        let response;
+
+        if (tipo_conta === "" || tipo_conta === "Indefinido") {
+          alert("Tem de especificar o tipo de conta que quer");
+          return;
+        } else if (tipo_conta === "Administrador") {
+          response = await fetch(
+            "http://127.0.0.1:8000/registar_administrador",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(dados),
+            },
+          );
+        } else {
+          response = await fetch("http://127.0.0.1:8000/registar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dados),
+          });
+        }
 
         const result = await response.json();
         if (result.success) {
           alert("Registo concluído!");
           window.location.href = "login.html";
         } else {
-          // Aqui vai aparecer o erro do Trigger: "Erro! Não podes votar sendo menor de idade."
+          // Aqui vai aparecer o erro do Trigger
           alert("Aviso do Servidor: " + result.message);
         }
       };

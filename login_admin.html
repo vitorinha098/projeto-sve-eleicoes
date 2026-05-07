@@ -132,16 +132,14 @@
           class="fw-extrabold mb-1"
           style="font-weight: 800; letter-spacing: -1px"
         >
-          Portal do Eleitor
+          Painel administrador
         </h2>
-        <p class="text-muted small">Insira os seus dados para aceder à urna</p>
+        <p class="text-muted small">Insira os seus dados de administrador</p>
       </div>
 
       <form id="loginForm">
         <div class="text-start mb-3">
-          <label class="form-label small fw-bold ms-1"
-            >NIF (Número de Identificação Fiscal)</label
-          >
+          <label class="form-label small fw-bold ms-1">Email</label>
           <div class="input-group">
             <span
               class="input-group-text bg-white border-end-0"
@@ -150,22 +148,18 @@
               <i class="bi bi-person text-muted"></i>
             </span>
             <input
-              type="text"
-              class="form-control border-start-0"
-              id="nifInput"
-              placeholder="000 000 000"
-              maxlength="9"
+              type="email"
+              class="form-control"
+              id="email"
               required
-              style="border-radius: 0 12px 12px 0"
+              placeholder="example@ex.com"
             />
           </div>
         </div>
 
         <div class="text-start mb-4">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <label class="form-label small fw-bold ms-1 mb-0"
-              >Chave de Acesso</label
-            >
+            <label class="form-label small fw-bold ms-1 mb-0">Password</label>
           </div>
 
           <div class="input-group">
@@ -200,7 +194,7 @@
           onclick="autenticar()"
           class="btn btn-login w-100 shadow-sm"
         >
-          Entrar no Sistema
+          Login
         </button>
       </form>
 
@@ -216,51 +210,37 @@
 
       <div class="text-center mt-3">
         <hr />
-        <p class="text-muted small">É um administrador?</p>
-        <a href="login_admin.html" class="btn btn-sm btn-outline-secondary">
-          Login administrador
+        <p class="text-muted small">É um eleitor?</p>
+        <a href="login.html" class="btn btn-sm btn-outline-secondary">
+          Login eleitor
         </a>
       </div>
     </div>
 
     <script>
       async function autenticar() {
-        const nif = document.getElementById("nifInput").value;
+        const email = document.getElementById("email").value;
         const chave = document.getElementById("passInput").value;
 
-        if (nif.length === 9 && chave !== "") {
+        if (email !== "" && chave !== "") {
           try {
-            const response = await fetch("http://127.0.0.1:8000/login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nif: nif, password: chave }),
-            });
+            const response = await fetch(
+              "http://127.0.0.1:8000/login_administrador",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email, password: chave }),
+              },
+            );
 
             const data = await response.json();
 
             if (data.success) {
               alert("Login efetuado com sucesso! Bem-vindo(a), " + data.nome);
-              localStorage.setItem("nifEleitor", nif);
-              localStorage.setItem("nomeEleitor", data.nome);
-              localStorage.setItem("idEleitor", data.idEleitor);
-              window.location.href = "dashboard_eleitor.html";
-
-              try {
-                const checkVoto = await fetch(
-                  `http://127.0.0.1:8000/verificar-voto/${nif}`,
-                );
-                const statusVoto = await checkVoto.json();
-
-                if (statusVoto.ja_votou) {
-                  alert("Atenção: Já exerceu o seu direito de voto!");
-                  window.location.href = "resultados.html";
-                } else {
-                  window.location.href = "votar.html";
-                }
-              } catch (err) {
-                console.error("Erro ao verificar voto, mas o login deu certo.");
-                window.location.href = "votar.html";
-              }
+              localStorage.setItem("emailAdmin", email);
+              localStorage.setItem("nomeAdmin", data.nome);
+              localStorage.setItem("idAdmin", data.idAdministrador);
+              window.location.href = "dashboard_admin.html";
             } else {
               alert(data.message || "Dados de acesso incorretos!");
             }
@@ -268,7 +248,7 @@
             alert("Erro de ligação: O servidor Node.js está offline!");
           }
         } else {
-          alert("Introduza um NIF válido e a sua chave.");
+          alert("Introduza um email válido e a sua chave.");
         }
       }
     </script>
