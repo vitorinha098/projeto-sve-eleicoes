@@ -30,25 +30,14 @@
       <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
           <div class="card card-admin p-4">
-            <h2 class="text-center mb-4 text-primary">
-              Registar Novo Candidato
-            </h2>
-            <p class="text-center text-muted mb-4">
-              Preencha os dados abaixo para adicionar um candidato à eleição
-              ativa.
-            </p>
+            <h2 class="text-center mb-4 text-primary">Registar Novo Candidato</h2>
+            <p class="text-center text-muted mb-4">Preencha os dados abaixo para adicionar um candidato à eleição ativa.</p>
 
             <form id="formCandidato">
               <!-- Nome -->
               <div class="mb-3">
                 <label class="form-label fw-bold">Nome Completo</label>
-                <input
-                  type="text"
-                  id="nome"
-                  class="form-control"
-                  placeholder="Ex: Maria Silva"
-                  required
-                />
+                <input type="text" id="nome" class="form-control" placeholder="Ex: Maria Silva" required/>
               </div>
 
               <div class="row">
@@ -65,64 +54,33 @@
                 <!-- Data Nasc -->
                 <div class="col-md-6 mb-3">
                   <label class="form-label fw-bold">Data de Nascimento</label>
-                  <input type="date" id="data_nasc" class="form-control" />
+                  <input type="date" id="data_nasc" class="form-control"/>
                 </div>
               </div>
 
               <!-- Descrição -->
               <div class="mb-3">
-                <label class="form-label fw-bold"
-                  >Biografia / Descrição (Opcional)</label
-                >
-                <textarea
-                  id="descricao"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Breve percurso político..."
-                ></textarea>
-              </div>
+                <label class="form-label fw-bold">Biografia / Descrição (Opcional)</label>
+                <textarea id="descricao" class="form-control" rows="3" placeholder="Breve percurso político..."></textarea>
+              </div>  
 
               <!-- Foto Candidato -->
               <div class="mb-3">
-                <label class="form-label fw-bold"
-                  >Fotografia do Candidato</label
-                >
-                <input
-                  type="file"
-                  id="foto"
-                  class="form-control"
-                  accept="image/*"
-                  required
-                />
+                <label class="form-label fw-bold">Fotografia do Candidato</label>
+                <input type="file" id="foto_candidato" class="form-control" accept="image/*" required/>
                 <div class="form-text">Formatos aceites: JPG, PNG.</div>
               </div>
               <!-- Foto Partido -->
               <div class="mb-3">
-                <label class="form-label fw-bold"
-                  >Fotografia do Candidato</label
-                >
-                <input
-                  type="file"
-                  id="foto"
-                  class="form-control"
-                  accept="image/*"
-                />
+                <label class="form-label fw-bold">Logo do Partido</label>
+                <input type="file" id="logo_partido" class="form-control" accept="image/*"/>
                 <div class="form-text">Formatos aceites: JPG, PNG.</div>
               </div>
 
               <!-- Botão Submeter -->
-              <button
-                type="submit"
-                class="btn btn-primary w-100 btn-registo mt-3"
-              >
-                Criar Candidato e Publicar
-              </button>
+              <button type="submit" class="btn btn-primary w-100 btn-registo mt-3">Criar Candidato e Publicar</button>
 
-              <a
-                href="login.html"
-                class="btn btn-link w-100 mt-2 text-decoration-none text-muted"
-                >Voltar ao Início</a
-              >
+              <a href="login.html" class="btn btn-link w-100 mt-2 text-decoration-none text-muted">Voltar ao Início</a>
             </form>
           </div>
         </div>
@@ -137,27 +95,19 @@
         const formData = new FormData();
         formData.append("nome_completo", document.getElementById("nome").value);
         formData.append("genero", document.getElementById("genero").value);
-        formData.append(
-          "data_nascimento",
-          document.getElementById("data_nasc").value,
-        );
-        formData.append(
-          "descricao",
-          document.getElementById("descricao").value,
-        );
+        formData.append("data_nascimento", document.getElementById("data_nasc").value);
+        formData.append("descricao", document.getElementById("descricao").value);
 
-        // O ficheiro da imagem
-        const inputFoto = document.getElementById("foto");
-        if (inputFoto.files.length > 0) {
-          formData.append("foto", inputFoto.files[0]);
-        }
+        const inputFoto = document.getElementById("foto_candidato");
+        const inputLogo = document.getElementById("logo_partido");
+
+        if (inputFoto.files[0]) formData.append("foto_candidato", inputFoto.files[0]);
+        if (inputLogo.files[0]) formData.append("logo_partido", inputLogo.files[0]);
 
         try {
-          const response = await fetch(
-            "http://localhost:8000/criar-candidato",
-            {
+          const response = await fetch("http://localhost:8000/criar-candidato", {
               method: "POST",
-              body: formData, // Não se usa JSON.stringify aqui!
+              body: formData, 
             },
           );
 
@@ -174,6 +124,6 @@
           alert("Não foi possível ligar ao servidor.");
         }
       };
-    </script>
+  </script>
   </body>
 </html>
