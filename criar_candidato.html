@@ -40,6 +40,12 @@
                 <input type="text" id="nome" class="form-control" placeholder="Ex: Maria Silva" required/>
               </div>
 
+
+              <div class="mb-3">
+                <label class="form-label fw-bold">Nome do Partido / Coligação</label>
+                <input type="text" id="nome_partido" class="form-control" placeholder="Ex: Aliança Democrática, Partido Socialista..." />
+              </div>
+
               <div class="row">
                 <!-- Género -->
                 <div class="col-md-6 mb-3">
@@ -94,6 +100,7 @@
         // Usamos FormData porque estamos a enviar um ficheiro (imagem)
         const formData = new FormData();
         formData.append("nome_completo", document.getElementById("nome").value);
+        formData.append("nome_partido", document.getElementById("nome_partido").value);
         formData.append("genero", document.getElementById("genero").value);
         formData.append("data_nascimento", document.getElementById("data_nasc").value);
         formData.append("descricao", document.getElementById("descricao").value);

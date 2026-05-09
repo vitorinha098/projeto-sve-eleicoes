@@ -130,35 +130,29 @@ app.post("/criar-candidato", upload.fields([
     { name: 'foto_candidato', maxCount: 1 },
     { name: 'logo_partido', maxCount: 1 }
 ]), (req, res) => {
+    // Agora o nome_partido vem do formulário!
     const { nome_completo, genero, data_nascimento, descricao, nome_partido } = req.body;
 
     const fotoCandNome = req.files['foto_candidato'] ? req.files['foto_candidato'][0].filename : 'default.png';
-    const logoPartNome = req.files['logo_partido'] ? req.files['logo_partido'][0].filename : null;
+    const logoPartNome = req.files['logo_partido'] ? req.files['logo_partido'][0].filename : 'default_logo.png';
 
-    // Função interna para inserir o candidato
-    const inserirCandidato = (partidoId) => {
-        const sql = `INSERT INTO Candidato 
+    // Inserir o partido com o nome real que o admin escreveu
+    const sqlPart = "INSERT INTO Partido (nome, foto) VALUES (?, ?)";
+    db.query(sqlPart, [nome_partido, logoPartNome], (err, result) => {
+        if (err) return res.status(500).json({ success: false, message: err.sqlMessage });
+
+        const partidoId = result.insertId;
+
+        // Inserir o candidato ligado a esse partido
+        const sqlCand = `INSERT INTO Candidato 
             (nome_completo, genero, data_nascimento, foto, descricao, id_partido, id_eleicao) 
             VALUES (?, ?, ?, ?, ?, ?, 1)`;
 
-        db.query(sql, [nome_completo, genero, data_nascimento, fotoCandNome, descricao, partidoId], (err) => {
+        db.query(sqlCand, [nome_completo, genero, data_nascimento, fotoCandNome, descricao, partidoId], (err) => {
             if (err) return res.status(500).json({ success: false, message: err.sqlMessage });
-            res.json({ success: true, message: "Candidato criado com sucesso!" });
+            res.json({ success: true, message: "Candidato e Partido criados!" });
         });
-    };
-
-    // LÓGICA OPCIONAL:
-    if (logoPartNome) {
-        // SE houver logo, criamos um partido novo para este candidato
-        const sqlPart = "INSERT INTO Partido (nome, foto) VALUES (?, ?)";
-        db.query(sqlPart, [nome_partido || "Partido de " + nome_completo, logoPartNome], (err, result) => {
-            if (err) return res.status(500).json({ success: false, message: err.sqlMessage });
-            inserirCandidato(result.insertId); // Insere candidato com o ID do novo partido
-        });
-    } else {
-        // SE NÃO houver logo, insere o candidato como Independente (ID do partido = null)
-        inserirCandidato(null);
-    }
+    });
 });
 
 // Rota para listar partidos no formulário
@@ -314,9 +308,13 @@ app.post("/login_administrador", (req, res) => {
 // LISTAR CANDIDATOS
 app.get("/candidatos", (req, res) => {
   const sql = `
-    SELECT c.id_candidato, c.nome_completo, p.nome AS nome_partido, p.foto 
+    SELECT 
+      c.id_candidato, 
+      c.nome_completo, 
+      c.foto AS foto_candidato, 
+      p.nome AS nome_partido 
     FROM Candidato c
-    JOIN Partido p ON c.id_partido = p.id_partido
+    LEFT JOIN Partido p ON c.id_partido = p.id_partido
     WHERE c.id_eleicao = 1`;
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json(err);

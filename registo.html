@@ -154,15 +154,7 @@
             <select class="form-select" id="genero" required>
               <option value="Indefinido"></option>
               <option value="Masculino">Masculino</option>
-              <option value="Feminino">Feminino</option></select
-            ><br />
-
-            <label class="form-label">Tipo de conta</label>
-            <select class="form-select" id="Tipo_conta" required>
-              <option value="Indefinido"></option>
-              <option value="Eleitor">Eleitor</option>
-              <option value="Administrador">Administrador</option>
-            </select>
+              <option value="Feminino">Feminino</option></select><br/>
           </div>
         </div>
 
@@ -223,41 +215,24 @@
           password: password,
         };
 
-        const tipo_conta = document.getElementById("Tipo_conta").value;
-        let response;
-
-        if (tipo_conta === "" || tipo_conta === "Indefinido") {
-          alert("Tem de especificar o tipo de conta que quer");
-          return;
-        } else if (tipo_conta === "Administrador") {
-          response = await fetch(
-            "http://127.0.0.1:8000/registar_administrador",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(dados),
-            },
-          );
-        } else {
-          response = await fetch("http://127.0.0.1:8000/registar", {
+        try {
+          const response = await fetch("http://127.0.0.1:8000/registar", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dados),
           });
-        }
 
-        const result = await response.json();
-        if (result.success) {
-          alert("Registo concluído!");
-
-          if(tipo_conta == "Administrador"){
-            window.location.href = "login_admin.html";
-          }else{
+          const result = await response.json();
+          
+          if (result.success) {
+            alert("Registo de Eleitor concluído!");
             window.location.href = "login.html";
-          }         
-        } else {
-          // Aqui vai aparecer o erro do Trigger
-          alert("Aviso do Servidor: " + result.message);
+          } else {
+            alert("Aviso do Servidor: " + result.message);
+          }
+        } catch (error) {
+          console.error("Erro:", error);
+          alert("Não foi possível ligar ao servidor.");
         }
       };
     </script>
