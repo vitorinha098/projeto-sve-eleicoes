@@ -47,15 +47,15 @@
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-dark mb-4">
-      <div class="container">
+    <nav class="navbar navbar-dark shadow-sm mb-4">
+    <div class="container">
         <span class="navbar-brand fw-bold">SVE - SISTEMA DE VOTO</span>
-        <span class="text-white"
-          >Bem-vindo(a),
-          <span id="exibirEleitor" class="text-warning">...</span></span
-        >
-      </div>
-    </nav>
+        <span class="navbar-text text-white">
+            Bem-vindo(a), <span id="exibirEleitor" class="text-warning">...</span> | 
+            <a href="login.html" class="text-white text-decoration-none ms-2" onclick="localStorage.clear()">Sair</a>
+        </span>
+    </div>
+</nav>
 
     <div class="container text-center">
       <h2 class="mb-5">Boletim de Voto Oficial</h2>
