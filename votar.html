@@ -81,7 +81,7 @@
                     <div class="col-md-4">
                         <div class="card card-candidato p-4 shadow-sm">
                             <div class="img-container mb-3">
-                                <img src="http://localhost:8000/img/${c.foto_candidato}" class="img-partido">
+                                <img src="https://projeto-sve-eleicoes.onrender.com/img/${c.foto_candidato}" class="img-partido">
                             </div>
                             <h4 class="fw-bold">${c.nome_completo}</h4>
                             <p class="text-muted small">${c.nome_partido}</p>
@@ -102,7 +102,7 @@
       async function processarVoto(idCandidato) {
         const idEleitor = localStorage.getItem("idEleitor");
         try {
-          const response = await fetch("http://localhost:8000/votar", {
+          const response = await fetch("https://projeto-sve-eleicoes.onrender.com/votar", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -247,7 +247,7 @@
 
               try {
                 const checkVoto = await fetch(
-                  `http://127.0.0.1:8000/verificar-voto/${nif}`,
+                  `https://projeto-sve-eleicoes.onrender.com/verificar-voto/${nif}`,
                 );
                 const statusVoto = await checkVoto.json();
 
