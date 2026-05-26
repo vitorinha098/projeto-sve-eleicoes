@@ -359,6 +359,8 @@ app.get("/resultados", (req, res) => {
   });
 });
 
-app.listen(8000, () =>
-  console.log("Servidor a correr em http://localhost:8000"),
-);
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+    console.log(`Servidor a rodar com sucesso na porta ${PORT}`);
+});

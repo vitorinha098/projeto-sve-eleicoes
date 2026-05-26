@@ -112,7 +112,7 @@
         if (inputLogo.files[0]) formData.append("logo_partido", inputLogo.files[0]);
 
         try {
-          const response = await fetch("http://localhost:8000/criar-candidato", {
+          const response = await fetch("https://projeto-sve-eleicoes.onrender.com/criar-candidato", {
               method: "POST",
               body: formData, 
             },

@@ -72,7 +72,7 @@
           nomeEleitor || "Utilizador";
 
         try {
-          const response = await fetch("http://localhost:8000/candidatos");
+          const response = await fetch("https://projeto-sve-eleicoes.onrender.com/candidatos");
           const candidatos = await response.json();
           container.innerHTML = "";
 
