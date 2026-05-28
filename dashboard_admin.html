@@ -990,7 +990,7 @@
       // XSS: textContent/DOM API em vez de innerHTML onde há dados do utilizador
       // =====================================================
 
-      const BASE = "http://localhost:8000";
+      const BASE = "https://projeto-sve-eleicoes.onrender.com";
       const CORES = ["#3b82f6","#10b981","#f59e0b","#ef4444","#6366f1","#ec4899","#14b8a6"];
 
       async function carregarDados() {
@@ -1123,7 +1123,7 @@
             const tdAvatar = document.createElement("td");
             if (c.foto_candidato) {
               const img = document.createElement("img");
-              img.src = "http://localhost:8000/img/" + c.foto_candidato;
+              img.src = "https://projeto-sve-eleicoes.onrender.com/img/" + c.foto_candidato;
               img.className = "cand-avatar";
               img.alt = c.nome_completo;
               img.onerror = function() {
@@ -1135,14 +1135,12 @@
             }
             tr.appendChild(tdAvatar);
 
-            // Nome — textContent (proteção XSS)
             const tdNome = document.createElement("td");
             tdNome.style.fontWeight = "600";
             tdNome.style.fontSize = "0.85rem";
             tdNome.textContent = c.nome_completo || "–";
             tr.appendChild(tdNome);
 
-            // Partido
             const tdPartido = document.createElement("td");
             const badge = document.createElement("span");
             badge.className = "badge-partido";
@@ -1150,13 +1148,11 @@
             tdPartido.appendChild(badge);
             tr.appendChild(tdPartido);
 
-            // Votos
             const tdVotos = document.createElement("td");
             tdVotos.style.fontWeight = "700";
             tdVotos.textContent = votos.toLocaleString("pt-PT");
             tr.appendChild(tdVotos);
 
-            // Barra de percentagem
             const tdBarra = document.createElement("td");
             const barraDiv = document.createElement("div");
             barraDiv.className = "barra-wrap";
@@ -1184,9 +1180,6 @@
         div.textContent = (nome || "?").charAt(0).toUpperCase();
         return div;
       }
-
-      
-      // GRÁFICO DE BARRAS
       
       function renderGrafico(resultados, totalVotos) {
         if (!resultados || resultados.length === 0) return;
@@ -1206,7 +1199,6 @@
           const label = document.createElement("div");
           label.className = "bar-chart-label";
           label.title = r.nome_completo;
-          // textContent — proteção XSS 
           label.textContent = r.nome_completo || "–";
 
           const track = document.createElement("div");
@@ -1230,8 +1222,6 @@
         });
       }
 
-      // =====================================================
-      // NAVEGAÇÃO ENTRE SECÇÕES
       
       function mostrarSecao(id) {
         document.getElementById("sec-dashboard").style.display = id === "dashboard" ? "" : "none";
@@ -1244,17 +1234,18 @@
       }
 
       
-      // SAIR — limpar sessão 
-      
       function sair() {
         localStorage.clear();
         window.location.href = "login_admin.html";
       }
 
       
-      // INICIALIZAÇÃO
       
       window.onload = function () {
+        const nomeAdmin = localStorage.getItem("nomeAdmin") || "Administrador";
+        document.getElementById("nomeAdmin").textContent = nomeAdmin;
+        document.getElementById("avatarInicial").textContent = nomeAdmin.charAt(0).toUpperCase();
+
         renderOwaspMini();
         carregarDados();
       };
