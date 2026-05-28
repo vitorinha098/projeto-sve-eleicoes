@@ -223,54 +223,39 @@
       </div>
     </div>
 
-    <script>
-      async function autenticar() {
-        const nif = document.getElementById("nifInput").value;
-        const chave = document.getElementById("passInput").value;
+  <script>
+    async function autenticar() {
+      const nif = document.getElementById("nifInput").value;
+      const chave = document.getElementById("passInput").value;
 
-        if (nif.length === 9 && chave !== "") {
-          try {
-            const response = await fetch("https://projeto-sve-eleicoes.onrender.com/login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nif: nif, password: chave }),
-            });
+      if (nif.length === 9 && chave !== "") {
+        try {
+          const response = await fetch("https://projeto-sve-eleicoes.onrender.com/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nif: nif, password: chave }),
+          });
 
-            const data = await response.json();
+          const data = await response.json();
 
-            if (data.success) {
-              alert("Login efetuado com sucesso! Bem-vindo(a), " + data.nome);
-              localStorage.setItem("nifEleitor", nif);
-              localStorage.setItem("nomeEleitor", data.nome);
-              localStorage.setItem("idEleitor", data.idEleitor);
-              window.location.href = "votar.html";
+          if (data.success) {
+            alert("Login efetuado com sucesso! Bem-vindo(a), " + data.nome);
+          
+            localStorage.setItem("nifEleitor", nif);
+            localStorage.setItem("nomeEleitor", data.nome);
+            localStorage.setItem("idEleitor", data.idEleitor);
+            window.location.href = "dashboard_eleitor.html"; 
 
-              try {
-                const checkVoto = await fetch(
-                  `https://projeto-sve-eleicoes.onrender.com/verificar-voto/${nif}`,
-                );
-                const statusVoto = await checkVoto.json();
-
-                if (statusVoto.ja_votou) {
-                  alert("Atenção: Já exerceu o seu direito de voto!");
-                  window.location.href = "resultados.html";
-                } else {
-                  window.location.href = "votar.html";
-                }
-              } catch (err) {
-                console.error("Erro ao verificar voto, mas o login deu certo.");
-                window.location.href = "votar.html";
-              }
-            } else {
-              alert(data.message || "Dados de acesso incorretos!");
-            }
-          } catch (error) {
-            alert("Erro de ligação: O servidor Node.js está offline!");
+          } else {
+            alert(data.message || "Dados de acesso incorretos!");
           }
-        } else {
-          alert("Introduza um NIF válido e a sua chave.");
+        } catch (error) {
+          alert("Erro de ligação: O servidor na Cloud está  offline! Tente novamente em 30 segundos.");
         }
+      } else {
+        alert("Introduza um NIF válido (9 dígitos) e a sua chave.");
       }
-    </script>
+    }
+  </script>
   </body>
 </html>

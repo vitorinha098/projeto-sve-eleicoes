@@ -1,0 +1,1264 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVE - Painel Administrador</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <style>
+      /* ======================================================
+         VARIÁVEIS CSS — 
+         ====================================================== */
+      :root {
+        --primary:    #0f172a;
+        --accent:     #3b82f6;
+        --success:    #10b981;
+        --warning:    #f59e0b;
+        --danger:     #ef4444;
+        --surface:    #f8fafc;
+        --card-bg:    rgba(255,255,255,0.92);
+        --border:     #0f172a14;
+        --text-muted: #64748b;
+        --radius:     16px;
+        --shadow:     0 4px 24px rgba(15,23,42,0.08);
+
+        /* Cores OWASP para badges */
+        --owasp-red:    #dc2626;
+        --owasp-orange: #ea580c;
+        --owasp-yellow: #ca8a04;
+      }
+
+      /* ======================================================
+         BODY & LAYOUT — HTML Semântico (header, nav, main, footer)
+         ====================================================== */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: var(--surface);
+        color: var(--primary);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body::before {
+        content: "";
+        position: fixed; inset: 0;
+        background:
+          radial-gradient(ellipse at 0% 0%, rgba(59,130,246,0.06) 0%, transparent 60%),
+          radial-gradient(ellipse at 100% 100%, rgba(16,185,129,0.05) 0%, transparent 60%);
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* ======================================================
+         HEADER — elemento semântico 
+         ====================================================== */
+      header {
+        background: var(--primary);
+        border-bottom: 3px solid var(--accent);
+        padding: 0 2rem;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 16px rgba(15,23,42,0.18);
+      }
+
+      .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .header-brand img {
+        width: 36px;
+        filter: brightness(0) invert(1);
+      }
+
+      .header-brand span {
+        color: white;
+        font-weight: 800;
+        font-size: 1rem;
+        letter-spacing: -0.5px;
+      }
+
+      .header-brand .badge-admin {
+        background: var(--accent);
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 20px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .admin-avatar {
+        width: 36px; height: 36px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+
+      .admin-name {
+        color: rgba(255,255,255,0.85);
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      /* ======================================================
+         NAV SIDEBAR — elemento semântico nav 
+         ====================================================== */
+      .layout {
+        display: flex;
+        flex: 1;
+      }
+
+      nav.sidebar {
+        width: 220px;
+        background: white;
+        border-right: 1px solid var(--border);
+        padding: 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .nav-section-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-muted);
+        padding: 0.75rem 1.25rem 0.25rem;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0.6rem 1.25rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 0;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        border-left: 3px solid transparent;
+      }
+
+      /* Pseudo-classe :hover */
+      .nav-item:hover {
+        background: rgba(59,130,246,0.06);
+        color: var(--accent);
+        border-left-color: var(--accent);
+      }
+
+      .nav-item.active {
+        background: rgba(59,130,246,0.08);
+        color: var(--accent);
+        border-left-color: var(--accent);
+      }
+
+      .nav-item i { font-size: 1rem; }
+
+      /* ======================================================
+         MAIN — elemento semântico 
+         ====================================================== */
+      main {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.25rem;
+      }
+
+      .page-subtitle {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-bottom: 2rem;
+      }
+
+      /* ======================================================
+         CARDS DE ESTATÍSTICA
+         ====================================================== */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      /* :hover — pseudo-classes */
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(15,23,42,0.12);
+      }
+
+      .stat-icon {
+        width: 48px; height: 48px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+      }
+
+      .stat-icon.blue   { background: rgba(59,130,246,0.12); color: var(--accent); }
+      .stat-icon.green  { background: rgba(16,185,129,0.12); color: var(--success); }
+      .stat-icon.yellow { background: rgba(245,158,11,0.12); color: var(--warning); }
+      .stat-icon.red    { background: rgba(239,68,68,0.12);  color: var(--danger); }
+
+      .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+      }
+
+      /* ======================================================
+         GRID PRINCIPAL
+         ====================================================== */
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      /* ======================================================
+         CARD GENÉRICO
+         ====================================================== */
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .card-header h3 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card-body-pad { padding: 1.25rem; }
+
+      /* ======================================================
+         TABELA DE CANDIDATOS — dados reais da API
+         ====================================================== */
+      .candidatos-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .candidatos-table th {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .candidatos-table td {
+        padding: 0.65rem 0.75rem;
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(15,23,42,0.04);
+        vertical-align: middle;
+      }
+
+      /* :hover em linhas — Aula 11 */
+      .candidatos-table tbody tr:hover {
+        background: rgba(59,130,246,0.04);
+      }
+
+      .cand-avatar {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--border);
+      }
+
+      .cand-avatar-placeholder {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366f1);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+      }
+
+      .badge-partido {
+        background: rgba(59,130,246,0.1);
+        color: var(--accent);
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+
+      /* ======================================================
+         BARRA DE VOTOS
+         ====================================================== */
+      .barra-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .barra-bg {
+        flex: 1;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .barra-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), #6366f1);
+        transition: width 0.8s ease;
+      }
+
+      .barra-pct {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        min-width: 30px;
+        text-align: right;
+      }
+
+      /* ======================================================
+         PAINEL OWASP — matéria 
+         ====================================================== */
+      .owasp-list { display: flex; flex-direction: column; gap: 6px; }
+
+      .owasp-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 0.6rem 0.75rem;
+        border-radius: 10px;
+        background: rgba(15,23,42,0.02);
+        border: 1px solid var(--border);
+        transition: background 0.2s;
+      }
+
+      /* :hover — Aula 11 */
+      .owasp-item:hover { background: rgba(59,130,246,0.05); }
+
+      .owasp-badge {
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 7px;
+        border-radius: 6px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .owasp-badge.critical { background: rgba(220,38,38,0.1); color: var(--owasp-red); }
+      .owasp-badge.high     { background: rgba(234,88,12,0.1); color: var(--owasp-orange); }
+      .owasp-badge.medium   { background: rgba(202,138,4,0.1);  color: var(--owasp-yellow); }
+
+      .owasp-text { font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+      .owasp-desc { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+
+      .status-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: 4px;
+      }
+      .status-dot.ok    { background: var(--success); }
+      .status-dot.warn  { background: var(--warning); }
+      .status-dot.error { background: var(--danger);  }
+
+      /* ======================================================
+         GRÁFICO DE BARRAS SVG — dados dos candidatos
+         ====================================================== */
+      .chart-section {
+        margin-top: 1.5rem;
+      }
+
+      .bar-chart { width: 100%; }
+
+      .bar-chart-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .bar-chart-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        min-width: 110px;
+        max-width: 110px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bar-chart-track {
+        flex: 1;
+        height: 20px;
+        background: #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .bar-chart-fill {
+        height: 100%;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        padding-left: 8px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: white;
+        transition: width 1s ease;
+      }
+
+      .bar-chart-count {
+        font-size: 0.75rem;
+        font-weight: 700;
+        min-width: 40px;
+        text-align: right;
+        color: var(--text-muted);
+      }
+
+      /* ======================================================
+         BOTÕES DE NAVEGAÇÃO — conectam às páginas do projeto
+         ====================================================== */
+      .nav-buttons-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 1rem 1.25rem;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        text-decoration: none;
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: var(--shadow);
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      /* :hover — pseudo-classes */
+      .nav-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(15,23,42,0.12);
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .nav-btn:active { transform: translateY(0); }
+
+      .nav-btn-icon {
+        width: 38px; height: 38px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+
+      .nav-btn-icon.blue   { background: rgba(59,130,246,0.1); color: var(--accent); }
+      .nav-btn-icon.green  { background: rgba(16,185,129,0.1); color: var(--success); }
+      .nav-btn-icon.yellow { background: rgba(245,158,11,0.1); color: var(--warning); }
+      .nav-btn-icon.red    { background: rgba(239,68,68,0.1);  color: var(--danger); }
+      .nav-btn-icon.purple { background: rgba(99,102,241,0.1); color: #6366f1; }
+
+      .nav-btn-text small {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 400;
+        margin-top: 1px;
+      }
+
+      /* ======================================================
+         FOOTER — elemento semântico 
+         ====================================================== */
+      footer {
+        background: white;
+        border-top: 1px solid var(--border);
+        padding: 0.75rem 2rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      footer .footer-security {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      footer .security-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 600;
+        font-size: 0.7rem;
+      }
+
+      footer .security-badge i { color: var(--success); }
+
+      /* ======================================================
+         ALERTAS DE SEGURANÇA — conceitos OWASP
+         ====================================================== */
+      .alert-owasp {
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        border-left: 3px solid;
+      }
+
+      .alert-owasp.ok     { background: rgba(16,185,129,0.08); border-color: var(--success); color: #065f46; }
+      .alert-owasp.warn   { background: rgba(245,158,11,0.08); border-color: var(--warning); color: #92400e; }
+      .alert-owasp.danger { background: rgba(239,68,68,0.08);  border-color: var(--danger);  color: #991b1b; }
+
+      /* ======================================================
+         SPINNER DE CARREGAMENTO
+         ====================================================== */
+      .spinner-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      /* ======================================================
+         RESPONSIVE: Responsive Web Design
+         ====================================================== */
+      @media (max-width: 900px) {
+        .content-grid { grid-template-columns: 1fr; }
+        nav.sidebar { display: none; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+
+      @media (max-width: 560px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        main { padding: 1rem; }
+      }
+
+      /* ======================================================
+         ANIMAÇÃO DE ENTRADA — staggered reveal - Motion
+         ====================================================== */
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .animate-in {
+        animation: fadeInUp 0.4s ease both;
+      }
+
+      .animate-in:nth-child(1) { animation-delay: 0.05s; }
+      .animate-in:nth-child(2) { animation-delay: 0.10s; }
+      .animate-in:nth-child(3) { animation-delay: 0.15s; }
+      .animate-in:nth-child(4) { animation-delay: 0.20s; }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- =====================================================
+         HEADER (HTML Semântico)
+         ===================================================== -->
+    <header>
+      <div class="header-brand">
+        <img src="sve.png" alt="SVE" onerror="this.style.display='none'" />
+        <span>SVE — Sistema de Voto</span>
+        <span class="badge-admin">Admin</span>
+      </div>
+      <div class="header-right">
+        <div class="admin-avatar" id="avatarInicial">A</div>
+        <span class="admin-name" id="nomeAdmin">Administrador</span>
+        <button onclick="sair()" class="btn btn-sm btn-outline-light ms-2" style="border-radius:8px; font-size:0.75rem; font-weight:700;">
+          <i class="bi bi-box-arrow-right"></i> Sair
+        </button>
+      </div>
+    </header>
+
+    <!-- =====================================================
+         LAYOUT PRINCIPAL
+         ===================================================== -->
+    <div class="layout">
+
+      <!-- NAV (HTML Semântico) -->
+      <nav class="sidebar">
+        <span class="nav-section-label">Gestão</span>
+        <a class="nav-item active" onclick="mostrarSecao('dashboard')">
+          <i class="bi bi-grid-1x2"></i> Dashboard
+        </a>
+        <a class="nav-item" href="criar_candidato.html">
+          <i class="bi bi-person-plus"></i> Novo Candidato
+        </a>
+        <a class="nav-item" href="resultados.html">
+          <i class="bi bi-bar-chart-line"></i> Resultados
+        </a>
+
+        <span class="nav-section-label" style="margin-top:0.75rem;">Segurança</span>
+        <a class="nav-item" onclick="mostrarSecao('owasp')">
+          <i class="bi bi-shield-check"></i> OWASP TOP 10
+        </a>
+
+        <span class="nav-section-label" style="margin-top:0.75rem;">Eleitores</span>
+        <a class="nav-item" href="login.html">
+          <i class="bi bi-person-circle"></i> Portal Eleitor
+        </a>
+        <a class="nav-item" href="registo.html">
+          <i class="bi bi-person-badge"></i> Registo
+        </a>
+
+        <div style="flex:1;"></div>
+        <div style="padding:1rem 1.25rem; border-top:1px solid var(--border); margin-top:auto;">
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">
+            <i class="bi bi-shield-lock-fill text-success"></i>
+            Sessão protegida<br>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:0.65rem;" id="sessaoId">–</span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- MAIN (HTML Semântico) -->
+      <main>
+
+        <!-- =====================================================
+             SECÇÃO: DASHBOARD
+             ===================================================== -->
+        <section id="sec-dashboard">
+
+          <h1 class="page-title">Painel de Administração</h1>
+          <p class="page-subtitle" id="data-hora">A carregar...</p>
+
+          <!-- BOTÕES DE NAVEGAÇÃO — conectam às páginas do projeto -->
+          <nav class="nav-buttons-grid" aria-label="Navegação rápida">
+            <a href="criar_candidato.html" class="nav-btn animate-in">
+              <div class="nav-btn-icon green"><i class="bi bi-person-plus-fill"></i></div>
+              <div class="nav-btn-text">
+                Criar Candidato
+                <small>Adicionar novo candidato</small>
+              </div>
+            </a>
+            <a href="votar.html" class="nav-btn animate-in">
+              <div class="nav-btn-icon blue"><i class="bi bi-check2-square"></i></div>
+              <div class="nav-btn-text">
+                Boletim de Voto
+                <small>Ver painel de votação</small>
+              </div>
+            </a>
+            <a href="resultados.html" class="nav-btn animate-in">
+              <div class="nav-btn-icon yellow"><i class="bi bi-bar-chart-fill"></i></div>
+              <div class="nav-btn-text">
+                Resultados
+                <small>Apuramento em tempo real</small>
+              </div>
+            </a>
+            <a href="registo.html" class="nav-btn animate-in">
+              <div class="nav-btn-icon purple"><i class="bi bi-person-badge-fill"></i></div>
+              <div class="nav-btn-text">
+                Registar Eleitor
+                <small>Adicionar novo utilizador</small>
+              </div>
+            </a>
+            <a href="login.html" class="nav-btn animate-in">
+              <div class="nav-btn-icon red"><i class="bi bi-door-open-fill"></i></div>
+              <div class="nav-btn-text">
+                Portal Eleitor
+                <small>Acesso ao sistema de voto</small>
+              </div>
+            </a>
+          </nav>
+
+          <!-- ESTATÍSTICAS — todas ligadas à BD via /stats e /resultados -->
+          <div class="stats-grid">
+            <div class="stat-card animate-in">
+              <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+              <div>
+                <div class="stat-label">Candidatos</div>
+                <div class="stat-value" id="stat-candidatos">–</div>
+              </div>
+            </div>
+            <div class="stat-card animate-in">
+              <div class="stat-icon green"><i class="bi bi-check2-circle"></i></div>
+              <div>
+                <div class="stat-label">Total de Votos</div>
+                <div class="stat-value" id="stat-votos">–</div>
+              </div>
+            </div>
+            <div class="stat-card animate-in">
+              <div class="stat-icon yellow"><i class="bi bi-person-badge-fill"></i></div>
+              <div>
+                <div class="stat-label">Eleitores Registados</div>
+                <div class="stat-value" id="stat-eleitores">–</div>
+              </div>
+            </div>
+            <div class="stat-card animate-in">
+              <div class="stat-icon red"><i class="bi bi-trophy-fill"></i></div>
+              <div>
+                <div class="stat-label">Na Liderança</div>
+                <div class="stat-value" id="stat-lider" style="font-size:0.95rem; line-height:1.2;">–</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARTÃO: INFORMAÇÃO DA ELEIÇÃO — dados da tabela Eleicao (BD) -->
+          <div class="card animate-in" id="eleicaoInfoCard" style="margin-bottom:1.5rem; display:none;">
+            <div class="card-header">
+              <h3><i class="bi bi-calendar-event text-warning"></i> Eleição Atual</h3>
+              <span id="eleicaoEstadoBadge" style="font-size:0.7rem; font-weight:700; padding:3px 10px; border-radius:20px;">–</span>
+            </div>
+            <div class="card-body-pad" style="display:flex; flex-wrap:wrap; gap:1.5rem;">
+              <div>
+                <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Nome</div>
+                <div style="font-weight:700; font-size:0.9rem;" id="eleicaoNome">–</div>
+              </div>
+              <div>
+                <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Tipo</div>
+                <div style="font-weight:700; font-size:0.9rem;" id="eleicaoTipo">–</div>
+              </div>
+              <div>
+                <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Início</div>
+                <div style="font-weight:700; font-size:0.9rem;" id="eleicaoInicio">–</div>
+              </div>
+              <div>
+                <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Fim</div>
+                <div style="font-weight:700; font-size:0.9rem;" id="eleicaoFim">–</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GRELHA: Candidatos + OWASP -->
+          <div class="content-grid">
+
+            <!-- CARD: Candidatos e votos -->
+            <div class="card animate-in">
+              <div class="card-header">
+                <h3><i class="bi bi-people text-primary"></i> Candidatos Registados</h3>
+                <a href="criar_candidato.html" class="btn btn-sm btn-primary" style="border-radius:8px; font-size:0.75rem; font-weight:700;">
+                  <i class="bi bi-plus"></i> Novo
+                </a>
+              </div>
+              <div id="tabelaWrap">
+                <div class="spinner-wrap">
+                  <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                  <span class="ms-2 text-muted" style="font-size:0.85rem;">A carregar candidatos...</span>
+                </div>
+              </div>
+
+              <!-- Gráfico de barras dos votos -->
+              <div class="card-body-pad pt-0" id="graficoWrap" style="display:none;">
+                <h3 style="font-size:0.85rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:1rem;">
+                  <i class="bi bi-bar-chart"></i> Distribuição de Votos
+                </h3>
+                <div class="bar-chart" id="barChart"></div>
+              </div>
+            </div>
+
+            <!-- ASIDE: Segurança OWASP em destaque -->
+            <aside>
+              <div class="card animate-in">
+                <div class="card-header">
+                  <h3><i class="bi bi-shield-check text-success"></i> Segurança — OWASP TOP 10</h3>
+                </div>
+                <div class="card-body-pad">
+                  <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">
+                    Estado das proteções aplicadas neste projeto.
+                  </p>
+                  <div class="owasp-list" id="owaspList"></div>
+                </div>
+              </div>
+            </aside>
+
+          </div>
+
+        </section>
+
+        <!-- =====================================================
+             SECÇÃO: OWASP TOP 10 DETALHADO 
+             ===================================================== -->
+        <section id="sec-owasp" style="display:none;">
+          <h1 class="page-title"><i class="bi bi-shield-exclamation"></i> OWASP TOP 10 — 2025</h1>
+          <p class="page-subtitle">Os 10 riscos de segurança mais críticos em aplicações Web — Aula 11, PI 2025/2026</p>
+
+          <div class="row g-3" id="owaspCards"></div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- =====================================================
+         FOOTER (HTML Semântico)
+         ===================================================== -->
+    <footer>
+      <span>SVE — Sistema de Voto Eletrónico &copy; 2026</span>
+      <div class="footer-security">
+        <span class="security-badge"><i class="bi bi-shield-check-fill"></i> OWASP Compliant</span>
+        <span class="security-badge"><i class="bi bi-lock-fill"></i> Sessão Autenticada</span>
+        <span class="security-badge"><i class="bi bi-database-check"></i> ORM Ativo</span>
+      </div>
+    </footer>
+
+    <script>
+      
+      
+      // DATA E HORA
+      
+      (function atualizarHora() {
+        const el = document.getElementById("data-hora");
+        const agora = new Date();
+        el.textContent = "Última atualização: " + agora.toLocaleString("pt-PT");
+      })();
+
+      
+      // DADOS OWASP TOP 10 
+      
+      const OWASP = [
+        {
+          id: "A01", titulo: "Broken Access Control",
+          desc: "Verificação de permissões no backend. Admin exige autenticação.",
+          nivel: "critical", status: "warn",
+          statusTxt: "Verificação no frontend — falta backend token JWT"
+        },
+        {
+          id: "A02", titulo: "Security Misconfiguration",
+          desc: "CORS, headers, variáveis de ambiente (.env).",
+          nivel: "high", status: "warn",
+          statusTxt: "CORS presente no servidor; credenciais em ficheiro"
+        },
+        {
+          id: "A04", titulo: "Cryptographic Failures",
+          desc: "Passwords devem ser hashadas (bcrypt). Usar HTTPS.",
+          nivel: "critical", status: "warn",
+          statusTxt: "Verificar se passwords são hashadas no servidor"
+        },
+        {
+          id: "A05", titulo: "Injection (XSS / SQL)",
+          desc: "Usar textContent em vez de innerHTML. ORM no backend.",
+          nivel: "critical", status: "ok",
+          statusTxt: "votar.html usa template literals — melhorar com DOM API"
+        },
+        {
+          id: "A07", titulo: "Authentication Failures",
+          desc: "Sessões via localStorage. Tokens curtos e validados.",
+          nivel: "high", status: "warn",
+          statusTxt: "Token simples — recomendar JWT com expiração"
+        },
+        {
+          id: "A09", titulo: "Security Logging & Alerting",
+          desc: "Registar tentativas de acesso, erros e eventos suspeitos.",
+          nivel: "medium", status: "warn",
+          statusTxt: "Logs no console; falta logging persistente no servidor"
+        }
+      ];
+
+      // Painel lateral mini
+      function renderOwaspMini() {
+        const el = document.getElementById("owaspList");
+        el.innerHTML = OWASP.map(o => `
+          <div class="owasp-item">
+            <div class="status-dot ${o.status}"></div>
+            <div>
+              <div class="owasp-badge ${o.nivel}">${o.id}:2025</div>
+              <div class="owasp-text">${o.titulo}</div>
+              <div class="owasp-desc">${o.statusTxt}</div>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      // Cards OWASP completos
+      function renderOwaspCards() {
+        const FULL = [
+          { id:"A01", titulo:"Broken Access Control",         nivel:"critical", desc:"Acontece quando a aplicação não verifica o que cada utilizador pode fazer. Permite acesso a dados ou funcionalidades sem permissão." },
+          { id:"A02", titulo:"Security Misconfiguration",     nivel:"high",     desc:"Configurações inseguras: credenciais por defeito, debug ativo em produção, headers em falta, portas abertas desnecessariamente." },
+          { id:"A03", titulo:"Software Supply Chain Failures",nivel:"high",     desc:"Vulnerabilidades em dependências externas, bibliotecas open-source, pipelines CI/CD ou mecanismos de distribuição de software." },
+          { id:"A04", titulo:"Cryptographic Failures",        nivel:"critical", desc:"Dados sensíveis sem cifragem, algoritmos fracos (MD5, SHA-1), passwords sem hash (bcrypt), utilizar HTTP em vez de HTTPS." },
+          { id:"A05", titulo:"Injection (XSS / SQL)",         nivel:"critical", desc:"Dados do utilizador interpretados como código. SQL Injection, XSS. Proteção: ORM, textContent, prepared statements, sanitização." },
+          { id:"A06", titulo:"Insecure Design",               nivel:"high",     desc:"Falhas de arquitetura e lógica desde o design: ausência de rate limiting, confiança excessiva no cliente, falta de threat modeling." },
+          { id:"A07", titulo:"Authentication Failures",       nivel:"critical", desc:"Mecanismos de autenticação fracos: passwords fracas, falta de MFA, sessões inseguras, tokens mal geridos, brute force sem proteção." },
+          { id:"A08", titulo:"Software/Data Integrity Failures",nivel:"high",  desc:"Confiança em software sem verificar integridade: updates não assinados, CI/CD inseguros, desserialização insegura." },
+          { id:"A09", titulo:"Security Logging & Alerting",   nivel:"medium",   desc:"Falta de logs e alertas: ataques ficam invisíveis. Necessário registar, monitorizar e alertar eventos de segurança em tempo útil." },
+          { id:"A10", titulo:"Mishandling of Exceptional Conditions",nivel:"medium", desc:"Erros não tratados expõem stack traces com informação sensível. Tratar todos os erros adequadamente no backend e frontend." }
+        ];
+
+        const cores = { critical:"#dc2626", high:"#ea580c", medium:"#ca8a04" };
+
+        document.getElementById("owaspCards").innerHTML = FULL.map(o => `
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 animate-in" style="border-top:3px solid ${cores[o.nivel]};">
+              <div class="card-body-pad">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                  <span class="owasp-badge ${o.nivel}" style="font-size:0.65rem;">${o.id}:2025</span>
+                  <span style="font-size:0.65rem; font-weight:600; text-transform:uppercase; color:${cores[o.nivel]};">${o.nivel.toUpperCase()}</span>
+                </div>
+                <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:6px;">${o.titulo}</h4>
+                <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.5; margin:0;">${o.desc}</p>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      // =====================================================
+      // CARREGAR DADOS DA API — usa /stats, /candidatos, /resultados, /eleicao/atual
+      // XSS: textContent/DOM API em vez de innerHTML onde há dados do utilizador
+      // =====================================================
+
+      const BASE = "http://localhost:8000";
+      const CORES = ["#3b82f6","#10b981","#f59e0b","#ef4444","#6366f1","#ec4899","#14b8a6"];
+
+      async function carregarDados() {
+        try {
+          // 1. Estatísticas gerais (eleitores, candidatos, votos, eleição)
+          const resStats = await fetch(BASE + "/stats");
+          const stats    = await resStats.json();
+
+          // 2. Candidatos com foto e partido (para a tabela)
+          const resCand  = await fetch(BASE + "/candidatos");
+          const candidatos = await resCand.json();
+
+          // 3. Resultados com votos por candidato (para gráfico e líder)
+          const resVotos   = await fetch(BASE + "/resultados");
+          const resultados = await resVotos.json();
+
+          // 4. Informação detalhada da eleição
+          const resEleicao = await fetch(BASE + "/eleicao/atual");
+          const eleicao    = resEleicao.ok ? await resEleicao.json() : null;
+
+          // ── Preencher estatísticas (textContent — sem XSS) ──
+          document.getElementById("stat-candidatos").textContent = stats.total_candidatos ?? candidatos.length;
+          document.getElementById("stat-votos").textContent      = (stats.total_votos ?? 0).toLocaleString("pt-PT");
+          document.getElementById("stat-eleitores").textContent  = (stats.total_eleitores ?? "–").toLocaleString("pt-PT");
+
+          // Mapa votos por nome_completo
+          const votosMap  = {};
+          let   totalVotos = 0;
+          resultados.forEach(r => {
+            votosMap[r.nome_completo] = r.total_votos || 0;
+            totalVotos += (r.total_votos || 0);
+          });
+
+          if (resultados.length > 0) {
+            const lider = resultados[0];
+            document.getElementById("stat-lider").textContent = lider.nome_completo || "–";
+          }
+
+          // ── Cartão de informação da eleição ──
+          if (eleicao) {
+            const card   = document.getElementById("eleicaoInfoCard");
+            const badge  = document.getElementById("eleicaoEstadoBadge");
+            const estado = (eleicao.estado || "").trim();
+
+            card.style.display = "";
+
+            // textContent — proteção XSS
+            document.getElementById("eleicaoNome").textContent   = eleicao.nome || "–";
+            document.getElementById("eleicaoTipo").textContent   = eleicao.tipo || "–";
+            document.getElementById("eleicaoInicio").textContent = eleicao.data_inicio
+              ? new Date(eleicao.data_inicio).toLocaleDateString("pt-PT") : "–";
+            document.getElementById("eleicaoFim").textContent    = eleicao.data_fim
+              ? new Date(eleicao.data_fim).toLocaleDateString("pt-PT") : "–";
+
+            badge.textContent = estado;
+            badge.style.background = estado === "Ativa"
+              ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)";
+            badge.style.color = estado === "Ativa"
+              ? "var(--success)" : "var(--danger)";
+          }
+
+          // ── Tabela e gráfico ──
+          renderTabelaCandidatos(candidatos, votosMap, totalVotos);
+          renderGrafico(resultados, totalVotos);
+
+        } catch (err) {
+          console.error("Erro ao carregar dados:", err);
+          document.getElementById("tabelaWrap").innerHTML = `
+            <div class="card-body-pad">
+              <div class="alert-owasp warn">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                Servidor offline. Inicie o servidor Node.js (<code>node server.js</code>) para ver os dados reais.
+              </div>
+            </div>`;
+          // Sem dados mock — o administrador deve ver o estado real
+          document.getElementById("stat-candidatos").textContent = "–";
+          document.getElementById("stat-votos").textContent = "–";
+          document.getElementById("stat-eleitores").textContent = "–";
+          document.getElementById("stat-lider").textContent = "Sem ligação";
+        }
+      }
+
+      
+      // RENDER TABELA — proteção XSS com DOM API 
+      
+      function renderTabelaCandidatos(candidatos, votosMap, totalVotos) {
+        const wrap = document.getElementById("tabelaWrap");
+        wrap.innerHTML = "";
+
+        const tableWrapper = document.createElement("div");
+        tableWrapper.style.overflowX = "auto";
+
+        const table = document.createElement("table");
+        table.className = "candidatos-table";
+
+        // Cabeçalho
+        const thead = document.createElement("thead");
+        thead.innerHTML = `
+          <tr>
+            <th></th>
+            <th>Nome</th>
+            <th>Partido</th>
+            <th>Votos</th>
+            <th style="min-width:120px;">Percentagem</th>
+          </tr>`;
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+
+        if (!candidatos || candidatos.length === 0) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 5;
+          td.style.textAlign = "center";
+          td.style.color = "var(--text-muted)";
+          td.style.padding = "1.5rem";
+          // textContent — proteção XSS 
+          td.textContent = "Nenhum candidato registado.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        } else {
+          candidatos.forEach((c, i) => {
+            const votos = votosMap[c.nome_completo] || 0;
+            const pct   = totalVotos > 0 ? Math.round((votos / totalVotos) * 100) : 0;
+            const cor   = CORES[i % CORES.length];
+
+            const tr = document.createElement("tr");
+
+            // Avatar
+            const tdAvatar = document.createElement("td");
+            if (c.foto_candidato) {
+              const img = document.createElement("img");
+              img.src = "http://localhost:8000/img/" + c.foto_candidato;
+              img.className = "cand-avatar";
+              img.alt = c.nome_completo;
+              img.onerror = function() {
+                this.replaceWith(criarPlaceholder(c.nome_completo, cor));
+              };
+              tdAvatar.appendChild(img);
+            } else {
+              tdAvatar.appendChild(criarPlaceholder(c.nome_completo, cor));
+            }
+            tr.appendChild(tdAvatar);
+
+            // Nome — textContent (proteção XSS)
+            const tdNome = document.createElement("td");
+            tdNome.style.fontWeight = "600";
+            tdNome.style.fontSize = "0.85rem";
+            tdNome.textContent = c.nome_completo || "–";
+            tr.appendChild(tdNome);
+
+            // Partido
+            const tdPartido = document.createElement("td");
+            const badge = document.createElement("span");
+            badge.className = "badge-partido";
+            badge.textContent = c.nome_partido || "Independente";
+            tdPartido.appendChild(badge);
+            tr.appendChild(tdPartido);
+
+            // Votos
+            const tdVotos = document.createElement("td");
+            tdVotos.style.fontWeight = "700";
+            tdVotos.textContent = votos.toLocaleString("pt-PT");
+            tr.appendChild(tdVotos);
+
+            // Barra de percentagem
+            const tdBarra = document.createElement("td");
+            const barraDiv = document.createElement("div");
+            barraDiv.className = "barra-wrap";
+            barraDiv.innerHTML = `
+              <div class="barra-bg">
+                <div class="barra-fill" style="width:${pct}%; background:${cor};"></div>
+              </div>
+              <span class="barra-pct">${pct}%</span>`;
+            tdBarra.appendChild(barraDiv);
+            tr.appendChild(tdBarra);
+
+            tbody.appendChild(tr);
+          });
+        }
+
+        table.appendChild(tbody);
+        tableWrapper.appendChild(table);
+        wrap.appendChild(tableWrapper);
+      }
+
+      function criarPlaceholder(nome, cor) {
+        const div = document.createElement("div");
+        div.className = "cand-avatar-placeholder";
+        div.style.background = `linear-gradient(135deg, ${cor}, #6366f1)`;
+        div.textContent = (nome || "?").charAt(0).toUpperCase();
+        return div;
+      }
+
+      
+      // GRÁFICO DE BARRAS
+      
+      function renderGrafico(resultados, totalVotos) {
+        if (!resultados || resultados.length === 0) return;
+        document.getElementById("graficoWrap").style.display = "block";
+
+        const chart = document.getElementById("barChart");
+        chart.innerHTML = "";
+
+        resultados.forEach((r, i) => {
+          const votos = r.total_votos || 0;
+          const pct   = totalVotos > 0 ? Math.round((votos / totalVotos) * 100) : 0;
+          const cor   = CORES[i % CORES.length];
+
+          const item = document.createElement("div");
+          item.className = "bar-chart-item";
+
+          const label = document.createElement("div");
+          label.className = "bar-chart-label";
+          label.title = r.nome_completo;
+          // textContent — proteção XSS 
+          label.textContent = r.nome_completo || "–";
+
+          const track = document.createElement("div");
+          track.className = "bar-chart-track";
+
+          const fill = document.createElement("div");
+          fill.className = "bar-chart-fill";
+          fill.style.width = pct + "%";
+          fill.style.background = cor;
+          if (pct > 12) fill.textContent = pct + "%";
+
+          const count = document.createElement("div");
+          count.className = "bar-chart-count";
+          count.textContent = votos.toLocaleString("pt-PT") + " v";
+
+          track.appendChild(fill);
+          item.appendChild(label);
+          item.appendChild(track);
+          item.appendChild(count);
+          chart.appendChild(item);
+        });
+      }
+
+      // =====================================================
+      // NAVEGAÇÃO ENTRE SECÇÕES
+      
+      function mostrarSecao(id) {
+        document.getElementById("sec-dashboard").style.display = id === "dashboard" ? "" : "none";
+        document.getElementById("sec-owasp").style.display     = id === "owasp"     ? "" : "none";
+
+        document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+        event && event.target && event.target.classList.add("active");
+
+        if (id === "owasp") renderOwaspCards();
+      }
+
+      
+      // SAIR — limpar sessão 
+      
+      function sair() {
+        localStorage.clear();
+        window.location.href = "login_admin.html";
+      }
+
+      
+      // INICIALIZAÇÃO
+      
+      window.onload = function () {
+        renderOwaspMini();
+        carregarDados();
+      };
+    </script>
+
+  </body>
+</html>

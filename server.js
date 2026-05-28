@@ -355,7 +355,42 @@ app.get("/resultados", (req, res) => {
       console.error("Erro SQL nos resultados:", err.sqlMessage);
       return res.status(500).json({ success: false, message: err.sqlMessage });
     }
-    res.json(results); // Envia os dados para o front-end
+    res.json(results); 
+  });
+});
+
+app.get("/eleicao/atual", (req, res) => {
+  res.json({
+    nome: "Eleições Presidenciais SVE 2026",
+    tipo: "Sufrágio Universal",
+    descricao: "Eleição oficial e segura para a Presidência da República através do Sistema de Voto Eletrónico.",
+    estado: "Ativa",
+    data_inicio: "2026-05-01T08:00:00.000Z",
+    data_fim: "2026-06-01T20:00:00.000Z"
+  });
+});
+
+app.get("/stats", (req, res) => {
+  const sqlEleitores = "SELECT COUNT(*) AS total FROM Eleitor";
+  const sqlCandidatos = "SELECT COUNT(*) AS total FROM Candidato";
+  const sqlVotos = "SELECT COUNT(*) AS total FROM Voto";
+
+  db.query(sqlEleitores, (err, resE) => {
+    if (err) return res.status(500).json(err);
+    
+    db.query(sqlCandidatos, (err, resC) => {
+      if (err) return res.status(500).json(err);
+      
+      db.query(sqlVotos, (err, resV) => {
+        if (err) return res.status(500).json(err);
+        
+        res.json({
+          total_eleitores: resE[0].total,
+          total_candidatos: resC[0].total,
+          total_votos: resV[0].total
+        });
+      });
+    });
   });
 });
 

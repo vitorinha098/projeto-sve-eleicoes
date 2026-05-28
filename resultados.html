@@ -153,7 +153,7 @@
           const pct     = totalVotosGlobal > 0 ? Math.round((votos / totalVotosGlobal) * 100) : 0;
           const cor     = cores[i % cores.length];
 
-          const urlBase = "http://localhost:8000/img/";
+          const urlBase = "https://projeto-sve-eleicoes.onrender.com/img/";
 
           const imgPartido = item.logo_partido 
             ? `<img src="${urlBase}${item.logo_partido}" onerror="this.style.display='none'">` 
