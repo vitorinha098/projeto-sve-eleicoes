@@ -315,7 +315,8 @@ app.get("/candidatos", (req, res) => {
       p.nome AS nome_partido 
     FROM Candidato c
     LEFT JOIN Partido p ON c.id_partido = p.id_partido
-    WHERE c.id_eleicao = 1`;
+    WHERE c.id_eleicao = 1
+    ORDER BY c.id_candidato ASC`;
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json(err);
     res.json(results);
